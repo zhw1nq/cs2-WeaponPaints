@@ -196,7 +196,7 @@ public partial class WeaponPaints
 					CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
 					var items = new List<MenuItem>();
-					items.Add(new MenuItem(MenuItemType.Spacer));
+					
 
 					foreach (var knifePair in knivesOnly)
 					{
@@ -283,7 +283,7 @@ public partial class WeaponPaints
 					CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
 					var items = new List<MenuItem>();
-					items.Add(new MenuItem(MenuItemType.Spacer));
+					
 
 					foreach (var weaponPair in classNamesByWeapon)
 					{
@@ -328,7 +328,7 @@ public partial class WeaponPaints
 		if (skinsForSelectedWeapon == null || !skinsForSelectedWeapon.Any()) return;
 
 		var items = new List<MenuItem>();
-		items.Add(new MenuItem(MenuItemType.Spacer));
+		
 
 		foreach (var skin in skinsForSelectedWeapon)
 		{
@@ -410,11 +410,11 @@ public partial class WeaponPaints
 		_menuManager!.ShowScrollableMenu(
 			controller: player,
 			title: Localizer["wp_skin_menu_skin_title", weaponName],
-			items: items,
-			callback: null,
-			isSubmenu: true,
-			freezePlayer: true,
-			visibleItems: 5
+						items: items,
+						callback: null,
+						isSubmenu: false,
+						freezePlayer: true,
+						visibleItems: 5
 		);
 	}
 
@@ -432,7 +432,7 @@ public partial class WeaponPaints
 					CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
 					var items = new List<MenuItem>();
-					items.Add(new MenuItem(MenuItemType.Spacer));
+					
 
 					foreach (var glove in GlovesList)
 					{
@@ -574,7 +574,7 @@ public partial class WeaponPaints
 					).ToList();
 
 					var items = new List<MenuItem>();
-					items.Add(new MenuItem(MenuItemType.Spacer));
+					
 
 					foreach (var agentObject in filteredAgents)
 					{
@@ -675,7 +675,7 @@ public partial class WeaponPaints
 					CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
 					var items = new List<MenuItem>();
-					items.Add(new MenuItem(MenuItemType.Spacer));
+					
 
 					items.Add(new MenuItem(
 						MenuItemType.Button,
@@ -813,7 +813,7 @@ public partial class WeaponPaints
 					CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
 					var items = new List<MenuItem>();
-					items.Add(new MenuItem(MenuItemType.Spacer));
+					
 
 					items.Add(new MenuItem(
 						MenuItemType.Button,
