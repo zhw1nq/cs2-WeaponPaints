@@ -196,7 +196,7 @@ public partial class WeaponPaints
 					CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
 					var items = new List<MenuItem>();
-					
+
 
 					foreach (var knifePair in knivesOnly)
 					{
@@ -283,18 +283,18 @@ public partial class WeaponPaints
 					CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
 					var items = new List<MenuItem>();
-					
+
 
 					foreach (var weaponPair in classNamesByWeapon)
 					{
 						items.Add(new MenuItem(
 							MenuItemType.Button,
-							new MenuValue($"{weaponPair.Key} "),
+							new MenuValue(string.Empty),
 							[
-								new MenuButtonCallback("→", weaponPair.Value, (ctrl, weaponClassName) =>
-								{
-									ShowSkinsForWeapon(ctrl, weaponPair.Key, weaponClassName);
-								})
+								new MenuButtonCallback(weaponPair.Key, weaponPair.Value, (ctrl, weaponClassName) =>
+							{
+								ShowSkinsForWeapon(ctrl, weaponPair.Key, weaponClassName);
+							})
 							]
 						));
 					}
@@ -328,7 +328,7 @@ public partial class WeaponPaints
 		if (skinsForSelectedWeapon == null || !skinsForSelectedWeapon.Any()) return;
 
 		var items = new List<MenuItem>();
-		
+
 
 		foreach (var skin in skinsForSelectedWeapon)
 		{
@@ -432,7 +432,7 @@ public partial class WeaponPaints
 					CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
 					var items = new List<MenuItem>();
-					
+
 
 					foreach (var glove in GlovesList)
 					{
@@ -574,7 +574,7 @@ public partial class WeaponPaints
 					).ToList();
 
 					var items = new List<MenuItem>();
-					
+
 
 					foreach (var agentObject in filteredAgents)
 					{
@@ -675,7 +675,7 @@ public partial class WeaponPaints
 					CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
 					var items = new List<MenuItem>();
-					
+
 
 					items.Add(new MenuItem(
 						MenuItemType.Button,
@@ -813,7 +813,7 @@ public partial class WeaponPaints
 					CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
 					var items = new List<MenuItem>();
-					
+
 
 					items.Add(new MenuItem(
 						MenuItemType.Button,
