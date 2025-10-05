@@ -17,10 +17,10 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
 
 	public WeaponPaintsConfig Config { get; set; } = new();
 	private static WeaponPaintsConfig _config { get; set; } = new();
-	public override string ModuleAuthor => "Nereziel & daffyy";
-	public override string ModuleDescription => "Skin, gloves, agents and knife selector, standalone and web-based";
-	public override string ModuleName => "WeaponPaints";
-	public override string ModuleVersion => "3.3-wkitsunemenu";
+	public override string ModuleAuthor => "Nereziel & daffyy & zhw1nq";
+	public override string ModuleDescription => "Skin, gloves, agents and knife selector, standalone and web-based with KitsuneMenu";
+	public override string ModuleName => "WeaponPaints with KitsuneMenu";
+	public override string ModuleVersion => "dev-1.6.3";
 
 	public override void Load(bool hotReload)
 	{
@@ -40,10 +40,10 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
 			GPlayersMusic.Clear();
 
 			foreach (var player in Enumerable
-						 .OfType<CCSPlayerController>(Utilities.GetPlayers().TakeWhile(_ => WeaponSync != null))
-						 .Where(player => player.IsValid &&
-							 !string.IsNullOrEmpty(player.IpAddress) && player is
-							 { IsBot: false, Connected: PlayerConnectedState.PlayerConnected }))
+						.OfType<CCSPlayerController>(Utilities.GetPlayers().TakeWhile(_ => WeaponSync != null))
+						.Where(player => player.IsValid &&
+							!string.IsNullOrEmpty(player.IpAddress) && player is
+							{ IsBot: false, Connected: PlayerConnectedState.PlayerConnected }))
 			{
 				var playerInfo = new PlayerInfo
 				{
@@ -107,7 +107,6 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
 		_localizer = Localizer;
 
 		Utility.Config = config;
-		Task.Run(async () => await Utility.CheckVersion(ModuleVersion, Logger));
 	}
 
 	public override void OnAllPluginsLoaded(bool hotReload)
