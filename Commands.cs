@@ -179,7 +179,7 @@ public partial class WeaponPaints
 					]
 				)).ToList();
 
-				_menuManager!.ShowScrollableMenu(player, Localizer["wp_knife_menu_title"], items, null, false, true, 5);
+				_menuManager!.ShowScrollableMenu(player, Localizer["wp_knife_menu_title"], items, null, false, true, 5, true);
 				return;
 			}
 
@@ -300,7 +300,7 @@ public partial class WeaponPaints
 				);
 			}).ToList();
 
-		_menuManager!.ShowScrollableMenu(player, Localizer["wp_skin_menu_skin_title", weaponName], items, null, false, true, 5);
+		_menuManager!.ShowScrollableMenu(player, Localizer["wp_skin_menu_skin_title", weaponName], items, null, false, true, 5, true);
 	}
 
 	private void SetupGlovesMenu()
@@ -402,7 +402,7 @@ public partial class WeaponPaints
 						);
 					}).ToList();
 
-				_menuManager!.ShowScrollableMenu(player, Localizer["wp_glove_menu_title"], items, null, false, true, 5);
+				_menuManager!.ShowScrollableMenu(player, Localizer["wp_glove_menu_title"], items, null, false, true, 5, true);
 				return;
 			}
 
@@ -482,7 +482,7 @@ public partial class WeaponPaints
 						);
 					}).ToList();
 
-				_menuManager!.ShowScrollableMenu(player, Localizer["wp_agent_menu_title"], items, null, false, true, 5);
+				_menuManager!.ShowScrollableMenu(player, Localizer["wp_agent_menu_title"], items, null, false, true, 5, true);
 				return;
 			}
 
@@ -523,7 +523,7 @@ public partial class WeaponPaints
 						);
 					}));
 
-				_menuManager!.ShowScrollableMenu(player, Localizer["wp_music_menu_title"], items, null, false, true, 5);
+				_menuManager!.ShowScrollableMenu(player, Localizer["wp_music_menu_title"], items, null, false, true, 5, true);
 				return;
 			}
 
@@ -617,7 +617,7 @@ public partial class WeaponPaints
 						);
 					}));
 
-				_menuManager!.ShowScrollableMenu(player, Localizer["wp_pins_menu_title"], items, null, false, true, 5);
+				_menuManager!.ShowScrollableMenu(player, Localizer["wp_pins_menu_title"], items, null, false, true, 5, true);
 				return;
 			}
 
