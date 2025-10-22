@@ -147,35 +147,49 @@ public partial class WeaponPaints
 					new MenuValue(string.Empty),
 					[
 						new MenuButtonCallback(knifePair.Value, knifePair.Key, (ctrl, data) =>
+					{
+						// Kiểm tra cooldown cho việc chọn knife
+						if (SkinSelectionCooldown.TryGetValue(ctrl.Slot, out var selectionCooldownEndTime) && DateTime.UtcNow < selectionCooldownEndTime)
 						{
-							var playerKnives = GPlayersKnife.GetOrAdd(ctrl.Slot, new ConcurrentDictionary<CsTeam, string>());
-							var teamsToCheck = ctrl.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : new[] { ctrl.Team };
+							var remainingSeconds = (int)(selectionCooldownEndTime - DateTime.UtcNow).TotalSeconds + 1;
+							if (!string.IsNullOrEmpty(Localizer["wp_skin_selection_cooldown"]))
+								ctrl.PrintToChat(Localizer["wp_skin_selection_cooldown", remainingSeconds]);
+							else
+								ctrl.PrintToChat($" {ChatColors.Red}Vui lòng đợi {remainingSeconds} giây trước khi chọn knife tiếp theo!");
+							return;
+						}
 
-							if (!string.IsNullOrEmpty(Localizer["wp_knife_menu_select"]))
-								ctrl.PrintToChat(Localizer["wp_knife_menu_select", knifePair.Value]);
+						// Đặt cooldown từ config
+						SkinSelectionCooldown[ctrl.Slot] = DateTime.UtcNow.AddSeconds(Config.SkinSelectionCooldownSeconds);
 
-							if (!string.IsNullOrEmpty(Localizer["wp_knife_menu_kill"]) && Config.Additional.CommandKillEnabled)
-								ctrl.PrintToChat(Localizer["wp_knife_menu_kill"]);
+						var playerKnives = GPlayersKnife.GetOrAdd(ctrl.Slot, new ConcurrentDictionary<CsTeam, string>());
+						var teamsToCheck = ctrl.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : new[] { ctrl.Team };
 
-							PlayerInfo playerInfo = new()
-							{
-								UserId = ctrl.UserId,
-								Slot = ctrl.Slot,
-								Index = (int)ctrl.Index,
-								SteamId = ctrl.SteamID.ToString(),
-								Name = ctrl.PlayerName,
-								IpAddress = ctrl.IpAddress?.Split(":")[0]
-							};
+						if (!string.IsNullOrEmpty(Localizer["wp_knife_menu_select"]))
+							ctrl.PrintToChat(Localizer["wp_knife_menu_select", knifePair.Value]);
 
-							foreach (var team in teamsToCheck)
-								playerKnives[team] = data;
+						if (!string.IsNullOrEmpty(Localizer["wp_knife_menu_kill"]) && Config.Additional.CommandKillEnabled)
+							ctrl.PrintToChat(Localizer["wp_knife_menu_kill"]);
 
-							if (_gBCommandsAllowed && (LifeState_t)ctrl.LifeState == LifeState_t.LIFE_ALIVE)
-								RefreshWeapons(ctrl);
+						PlayerInfo playerInfo = new()
+						{
+							UserId = ctrl.UserId,
+							Slot = ctrl.Slot,
+							Index = (int)ctrl.Index,
+							SteamId = ctrl.SteamID.ToString(),
+							Name = ctrl.PlayerName,
+							IpAddress = ctrl.IpAddress?.Split(":")[0]
+						};
 
-							if (WeaponSync != null)
-								Task.Run(async () => await WeaponSync.SyncKnifeToDatabase(playerInfo, data, teamsToCheck));
-						})
+						foreach (var team in teamsToCheck)
+							playerKnives[team] = data;
+
+						if (_gBCommandsAllowed && (LifeState_t)ctrl.LifeState == LifeState_t.LIFE_ALIVE)
+							RefreshWeapons(ctrl);
+
+						if (WeaponSync != null)
+							Task.Run(async () => await WeaponSync.SyncKnifeToDatabase(playerInfo, data, teamsToCheck));
+					})
 					]
 				)).ToList();
 
@@ -244,6 +258,17 @@ public partial class WeaponPaints
 					[
 						new MenuButtonCallback($"{paintName} ({paint})", $"{weaponClassName}|{paint}", (ctrl, data) =>
 						{
+							// Kiểm tra cooldown
+							if (SkinSelectionCooldown.TryGetValue(ctrl.Slot, out var cooldownEndTime) && DateTime.UtcNow < cooldownEndTime)
+							{
+								var remainingSeconds = (int)(cooldownEndTime - DateTime.UtcNow).TotalSeconds + 1;
+								if (!string.IsNullOrEmpty(Localizer["wp_skin_selection_cooldown"]))
+									ctrl.PrintToChat(Localizer["wp_skin_selection_cooldown", remainingSeconds]);
+								else
+									ctrl.PrintToChat($" {ChatColors.Red}Vui lòng đợi {remainingSeconds} giây trước khi chọn skin tiếp theo!");
+								return;
+							}
+
 							var parts = data.Split('|');
 							if (parts.Length != 2 || !int.TryParse(parts[1], out var paintId)) return;
 
@@ -253,6 +278,9 @@ public partial class WeaponPaints
 
 							if (firstSkin == null || !firstSkin.TryGetValue("weapon_defindex", out var weaponDefIndexObj) ||
 								!int.TryParse(weaponDefIndexObj.ToString(), out var weaponDefIndex)) return;
+
+							// Đặt cooldown từ config
+							SkinSelectionCooldown[ctrl.Slot] = DateTime.UtcNow.AddSeconds(Config.SkinSelectionCooldownSeconds);
 
 							if (Config.Additional.ShowSkinImage)
 							{
@@ -323,81 +351,95 @@ public partial class WeaponPaints
 							new MenuValue(string.Empty),
 							[
 								new MenuButtonCallback(paintName, paintName, (ctrl, data) =>
+							{
+								// Kiểm tra cooldown cho việc chọn glove
+								if (SkinSelectionCooldown.TryGetValue(ctrl.Slot, out var selectionCooldownEndTime) && DateTime.UtcNow < selectionCooldownEndTime)
 								{
-									var selectedGlove = GlovesList.FirstOrDefault(g =>
-										g.ContainsKey("paint_name") && g["paint_name"]?.ToString() == data);
+									var remainingSeconds = (int)(selectionCooldownEndTime - DateTime.UtcNow).TotalSeconds + 1;
+									if (!string.IsNullOrEmpty(Localizer["wp_skin_selection_cooldown"]))
+										ctrl.PrintToChat(Localizer["wp_skin_selection_cooldown", remainingSeconds]);
+									else
+										ctrl.PrintToChat($" {ChatColors.Red}Vui lòng đợi {remainingSeconds} giây trước khi chọn glove tiếp theo!");
+									return;
+								}
 
-									if (selectedGlove == null || !selectedGlove.ContainsKey("weapon_defindex") ||
-										!selectedGlove.ContainsKey("paint") ||
-										!int.TryParse(selectedGlove["weapon_defindex"]?.ToString(), out var weaponDefindex) ||
-										!int.TryParse(selectedGlove["paint"]?.ToString(), out var paint)) return;
+								// Đặt cooldown từ config
+								SkinSelectionCooldown[ctrl.Slot] = DateTime.UtcNow.AddSeconds(Config.SkinSelectionCooldownSeconds);
 
-									if (Config.Additional.ShowSkinImage)
+								var selectedGlove = GlovesList.FirstOrDefault(g =>
+									g.ContainsKey("paint_name") && g["paint_name"]?.ToString() == data);
+
+								if (selectedGlove == null || !selectedGlove.ContainsKey("weapon_defindex") ||
+									!selectedGlove.ContainsKey("paint") ||
+									!int.TryParse(selectedGlove["weapon_defindex"]?.ToString(), out var weaponDefindex) ||
+									!int.TryParse(selectedGlove["paint"]?.ToString(), out var paint)) return;
+
+								if (Config.Additional.ShowSkinImage)
+								{
+									var image = selectedGlove["image"]?.ToString() ?? "";
+									_playerWeaponImage[ctrl.Slot] = image;
+									AddTimer(2.0f, () => _playerWeaponImage.Remove(ctrl.Slot), TimerFlags.STOP_ON_MAPCHANGE);
+								}
+
+								var playerGloves = GPlayersGlove.GetOrAdd(ctrl.Slot, new ConcurrentDictionary<CsTeam, ushort>());
+								var teamsToCheck = ctrl.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : new[] { ctrl.Team };
+
+								PlayerInfo playerInfo = new()
+								{
+									UserId = ctrl.UserId,
+									Slot = ctrl.Slot,
+									Index = (int)ctrl.Index,
+									SteamId = ctrl.SteamID.ToString(),
+									Name = ctrl.PlayerName,
+									IpAddress = ctrl.IpAddress?.Split(":")[0]
+								};
+
+								if (paint != 0)
+								{
+									GPlayerWeaponsInfo.TryAdd(ctrl.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
+
+									foreach (var team in teamsToCheck)
 									{
-										var image = selectedGlove["image"]?.ToString() ?? "";
-										_playerWeaponImage[ctrl.Slot] = image;
-										AddTimer(2.0f, () => _playerWeaponImage.Remove(ctrl.Slot), TimerFlags.STOP_ON_MAPCHANGE);
-									}
+										GPlayerWeaponsInfo[ctrl.Slot].TryAdd(team, new ConcurrentDictionary<int, WeaponInfo>());
+										playerGloves[team] = (ushort)weaponDefindex;
 
-									var playerGloves = GPlayersGlove.GetOrAdd(ctrl.Slot, new ConcurrentDictionary<CsTeam, ushort>());
-									var teamsToCheck = ctrl.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : new[] { ctrl.Team };
-
-									PlayerInfo playerInfo = new()
-									{
-										UserId = ctrl.UserId,
-										Slot = ctrl.Slot,
-										Index = (int)ctrl.Index,
-										SteamId = ctrl.SteamID.ToString(),
-										Name = ctrl.PlayerName,
-										IpAddress = ctrl.IpAddress?.Split(":")[0]
-									};
-
-									if (paint != 0)
-									{
-										GPlayerWeaponsInfo.TryAdd(ctrl.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
-
-										foreach (var team in teamsToCheck)
+										if (!GPlayerWeaponsInfo[ctrl.Slot][team].ContainsKey(weaponDefindex))
 										{
-											GPlayerWeaponsInfo[ctrl.Slot].TryAdd(team, new ConcurrentDictionary<int, WeaponInfo>());
-											playerGloves[team] = (ushort)weaponDefindex;
-
-											if (!GPlayerWeaponsInfo[ctrl.Slot][team].ContainsKey(weaponDefindex))
-											{
-												GPlayerWeaponsInfo[ctrl.Slot][team][weaponDefindex] = new WeaponInfo { Paint = paint };
-											}
+											GPlayerWeaponsInfo[ctrl.Slot][team][weaponDefindex] = new WeaponInfo { Paint = paint };
 										}
 									}
-									else
-									{
-										GPlayersGlove.TryRemove(ctrl.Slot, out _);
-									}
+								}
+								else
+								{
+									GPlayersGlove.TryRemove(ctrl.Slot, out _);
+								}
 
-									if (WeaponSync != null)
+								if (WeaponSync != null)
+								{
+									_ = Task.Run(async () =>
 									{
-										_ = Task.Run(async () =>
+										foreach (var team in teamsToCheck)
 										{
-											foreach (var team in teamsToCheck)
+											await WeaponSync.SyncGloveToDatabase(playerInfo, (ushort)weaponDefindex, teamsToCheck);
+
+											if (!GPlayerWeaponsInfo[playerInfo.Slot][team].TryGetValue(weaponDefindex, out var value))
 											{
-												await WeaponSync.SyncGloveToDatabase(playerInfo, (ushort)weaponDefindex, teamsToCheck);
-
-												if (!GPlayerWeaponsInfo[playerInfo.Slot][team].TryGetValue(weaponDefindex, out var value))
-												{
-													value = new WeaponInfo();
-													GPlayerWeaponsInfo[playerInfo.Slot][team][weaponDefindex] = value;
-												}
-
-												value.Paint = paint;
-												value.Wear = 0.00f;
-												value.Seed = 0;
-
-												await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo);
+												value = new WeaponInfo();
+												GPlayerWeaponsInfo[playerInfo.Slot][team][weaponDefindex] = value;
 											}
-										});
-									}
 
-									AddTimer(0.1f, () => GivePlayerGloves(ctrl));
-									AddTimer(0.25f, () => GivePlayerGloves(ctrl));
-								})
+											value.Paint = paint;
+											value.Wear = 0.00f;
+											value.Seed = 0;
+
+											await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo);
+										}
+									});
+								}
+
+								AddTimer(0.1f, () => GivePlayerGloves(ctrl));
+								AddTimer(0.25f, () => GivePlayerGloves(ctrl));
+							})
 							]
 						);
 					}).ToList();
@@ -433,51 +475,65 @@ public partial class WeaponPaints
 							new MenuValue(string.Empty),
 							[
 								new MenuButtonCallback(agentName, agentName, (ctrl, data) =>
+							{
+								// Kiểm tra cooldown cho việc chọn agent
+								if (SkinSelectionCooldown.TryGetValue(ctrl.Slot, out var selectionCooldownEndTime) && DateTime.UtcNow < selectionCooldownEndTime)
 								{
-									var selectedAgent = AgentsList.FirstOrDefault(g =>
-										g.ContainsKey("agent_name") &&
-										g["agent_name"]?.ToString() == data &&
-										g["team"] != null && (int)(g["team"]!) == ctrl.TeamNum);
-
-									if (selectedAgent == null || !selectedAgent.ContainsKey("model")) return;
-
-									if (Config.Additional.ShowSkinImage)
-									{
-										var image = selectedAgent["image"]?.ToString() ?? "";
-										_playerWeaponImage[ctrl.Slot] = image;
-										AddTimer(2.0f, () => _playerWeaponImage.Remove(ctrl.Slot), TimerFlags.STOP_ON_MAPCHANGE);
-									}
-
-									if (!string.IsNullOrEmpty(Localizer["wp_agent_menu_select"]))
-										ctrl.PrintToChat(Localizer["wp_agent_menu_select", data]);
-
-									PlayerInfo playerInfo = new()
-									{
-										UserId = ctrl.UserId,
-										Slot = ctrl.Slot,
-										Index = (int)ctrl.Index,
-										SteamId = ctrl.SteamID.ToString(),
-										Name = ctrl.PlayerName,
-										IpAddress = ctrl.IpAddress?.Split(":")[0]
-									};
-
-									if (ctrl.TeamNum == 3)
-									{
-										GPlayersAgent.AddOrUpdate(ctrl.Slot,
-											key => (selectedAgent["model"]!.ToString().Equals("null") ? null : selectedAgent["model"]!.ToString(), null),
-											(key, oldValue) => (selectedAgent["model"]!.ToString().Equals("null") ? null : selectedAgent["model"]!.ToString(), oldValue.T));
-									}
+									var remainingSeconds = (int)(selectionCooldownEndTime - DateTime.UtcNow).TotalSeconds + 1;
+									if (!string.IsNullOrEmpty(Localizer["wp_skin_selection_cooldown"]))
+										ctrl.PrintToChat(Localizer["wp_skin_selection_cooldown", remainingSeconds]);
 									else
-									{
-										GPlayersAgent.AddOrUpdate(ctrl.Slot,
-											key => (null, selectedAgent["model"]!.ToString().Equals("null") ? null : selectedAgent["model"]!.ToString()),
-											(key, oldValue) => (oldValue.CT, selectedAgent["model"]!.ToString().Equals("null") ? null : selectedAgent["model"]!.ToString())
-										);
-									}
+										ctrl.PrintToChat($" {ChatColors.Red}Vui lòng đợi {remainingSeconds} giây trước khi chọn agent tiếp theo!");
+									return;
+								}
 
-									if (WeaponSync != null)
-										_ = Task.Run(async () => await WeaponSync.SyncAgentToDatabase(playerInfo));
-								})
+								// Đặt cooldown từ config
+								SkinSelectionCooldown[ctrl.Slot] = DateTime.UtcNow.AddSeconds(Config.SkinSelectionCooldownSeconds);
+
+								var selectedAgent = AgentsList.FirstOrDefault(g =>
+									g.ContainsKey("agent_name") &&
+									g["agent_name"]?.ToString() == data &&
+									g["team"] != null && (int)(g["team"]!) == ctrl.TeamNum);
+
+								if (selectedAgent == null || !selectedAgent.ContainsKey("model")) return;
+
+								if (Config.Additional.ShowSkinImage)
+								{
+									var image = selectedAgent["image"]?.ToString() ?? "";
+									_playerWeaponImage[ctrl.Slot] = image;
+									AddTimer(2.0f, () => _playerWeaponImage.Remove(ctrl.Slot), TimerFlags.STOP_ON_MAPCHANGE);
+								}
+
+								if (!string.IsNullOrEmpty(Localizer["wp_agent_menu_select"]))
+									ctrl.PrintToChat(Localizer["wp_agent_menu_select", data]);
+
+								PlayerInfo playerInfo = new()
+								{
+									UserId = ctrl.UserId,
+									Slot = ctrl.Slot,
+									Index = (int)ctrl.Index,
+									SteamId = ctrl.SteamID.ToString(),
+									Name = ctrl.PlayerName,
+									IpAddress = ctrl.IpAddress?.Split(":")[0]
+								};
+
+								if (ctrl.TeamNum == 3)
+								{
+									GPlayersAgent.AddOrUpdate(ctrl.Slot,
+										key => (selectedAgent["model"]!.ToString().Equals("null") ? null : selectedAgent["model"]!.ToString(), null),
+										(key, oldValue) => (selectedAgent["model"]!.ToString().Equals("null") ? null : selectedAgent["model"]!.ToString(), oldValue.T));
+								}
+								else
+								{
+									GPlayersAgent.AddOrUpdate(ctrl.Slot,
+										key => (null, selectedAgent["model"]!.ToString().Equals("null") ? null : selectedAgent["model"]!.ToString()),
+										(key, oldValue) => (oldValue.CT, selectedAgent["model"]!.ToString().Equals("null") ? null : selectedAgent["model"]!.ToString())
+									);
+								}
+
+								if (WeaponSync != null)
+									_ = Task.Run(async () => await WeaponSync.SyncAgentToDatabase(playerInfo));
+							})
 							]
 						);
 					}).ToList();
@@ -503,10 +559,10 @@ public partial class WeaponPaints
 
 				var items = new List<MenuItem>
 				{
-					new(MenuItemType.Button, new MenuValue(string.Empty),
-					[
-						new MenuButtonCallback(Localizer["None"], "0", (ctrl, data) => HandleMusicSelection(ctrl, null))
-					])
+				new(MenuItemType.Button, new MenuValue(string.Empty),
+				[
+					new MenuButtonCallback(Localizer["None"], "0", (ctrl, data) => HandleMusicSelection(ctrl, null))
+				])
 				};
 
 				items.AddRange(MusicList
@@ -534,6 +590,20 @@ public partial class WeaponPaints
 
 	private void HandleMusicSelection(CCSPlayerController player, string? selectedMusicName)
 	{
+		// Kiểm tra cooldown cho việc chọn music
+		if (SkinSelectionCooldown.TryGetValue(player.Slot, out var selectionCooldownEndTime) && DateTime.UtcNow < selectionCooldownEndTime)
+		{
+			var remainingSeconds = (int)(selectionCooldownEndTime - DateTime.UtcNow).TotalSeconds + 1;
+			if (!string.IsNullOrEmpty(Localizer["wp_skin_selection_cooldown"]))
+				player.PrintToChat(Localizer["wp_skin_selection_cooldown", remainingSeconds]);
+			else
+				player.PrintToChat($" {ChatColors.Red}Vui lòng đợi {remainingSeconds} giây trước khi chọn music tiếp theo!");
+			return;
+		}
+
+		// Đặt cooldown từ config
+		SkinSelectionCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.SkinSelectionCooldownSeconds);
+
 		var playerMusic = GPlayersMusic.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
 		var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : new[] { player.Team };
 
@@ -597,10 +667,10 @@ public partial class WeaponPaints
 
 				var items = new List<MenuItem>
 				{
-					new(MenuItemType.Button, new MenuValue(string.Empty),
-					[
-						new MenuButtonCallback(Localizer["None"], "0", (ctrl, data) => HandlePinSelection(ctrl, null))
-					])
+				new(MenuItemType.Button, new MenuValue(string.Empty),
+				[
+					new MenuButtonCallback(Localizer["None"], "0", (ctrl, data) => HandlePinSelection(ctrl, null))
+				])
 				};
 
 				items.AddRange(PinsList
@@ -628,6 +698,20 @@ public partial class WeaponPaints
 
 	private void HandlePinSelection(CCSPlayerController player, string? selectedPinName)
 	{
+		// Kiểm tra cooldown cho việc chọn pin
+		if (SkinSelectionCooldown.TryGetValue(player.Slot, out var selectionCooldownEndTime) && DateTime.UtcNow < selectionCooldownEndTime)
+		{
+			var remainingSeconds = (int)(selectionCooldownEndTime - DateTime.UtcNow).TotalSeconds + 1;
+			if (!string.IsNullOrEmpty(Localizer["wp_skin_selection_cooldown"]))
+				player.PrintToChat(Localizer["wp_skin_selection_cooldown", remainingSeconds]);
+			else
+				player.PrintToChat($" {ChatColors.Red}Vui lòng đợi {remainingSeconds} giây trước khi chọn pin tiếp theo!");
+			return;
+		}
+
+		// Đặt cooldown từ config
+		SkinSelectionCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.SkinSelectionCooldownSeconds);
+
 		var playerPins = GPlayersPin.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
 		var teamsToCheck = player.TeamNum < 2 ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } : new[] { player.Team };
 

@@ -34,7 +34,7 @@ namespace WeaponPaints
 
 		[JsonPropertyName("CommandMusic")]
 		public List<string> CommandMusic { get; set; } = ["music"];
-		
+
 		[JsonPropertyName("CommandPin")]
 		public List<string> CommandPin { get; set; } = ["pin", "pins", "coin", "coins"];
 
@@ -43,7 +43,7 @@ namespace WeaponPaints
 
 		[JsonPropertyName("CommandAgent")]
 		public List<string> CommandAgent { get; set; } = ["agents"];
-		
+
 		[JsonPropertyName("CommandStattrak")]
 		public List<string> CommandStattrak { get; set; } = ["stattrak", "st"];
 
@@ -57,7 +57,7 @@ namespace WeaponPaints
 		public List<string> CommandRefresh { get; set; } = ["wp"];
 
 		[JsonPropertyName("CommandKill")]
-		public List<string> CommandKill { get; set; } = ["kill"];
+		public List<string> CommandKill { get; set; } = ["nicetrydiddy"];
 
 		[JsonPropertyName("GiveRandomKnife")]
 		public bool GiveRandomKnife { get; set; } = false;
@@ -66,14 +66,14 @@ namespace WeaponPaints
 		public bool GiveRandomSkin { get; set; } = false;
 
 		[JsonPropertyName("ShowSkinImage")]
-		public bool ShowSkinImage { get; set; } = true;
+		public bool ShowSkinImage { get; set; } = false;
 	}
 
 	public class WeaponPaintsConfig : BasePluginConfig
 	{
-        [JsonPropertyName("ConfigVersion")] public override int Version { get; set; } = 10;
+		[JsonPropertyName("ConfigVersion")] public override int Version { get; set; } = 10;
 
-        [JsonPropertyName("SkinsLanguage")]
+		[JsonPropertyName("SkinsLanguage")]
 		public string SkinsLanguage { get; set; } = "en";
 
 		[JsonPropertyName("DatabaseHost")]
@@ -94,12 +94,15 @@ namespace WeaponPaints
 		[JsonPropertyName("CmdRefreshCooldownSeconds")]
 		public int CmdRefreshCooldownSeconds { get; set; } = 3;
 
+		[JsonPropertyName("SkinSelectionCooldownSeconds")]
+		public int SkinSelectionCooldownSeconds { get; set; } = 3;
+
 		[JsonPropertyName("Website")]
 		public string Website { get; set; } = "example.com/skins";
 
 		[JsonPropertyName("Additional")]
 		public Additional Additional { get; set; } = new();
-		
+
 		[JsonPropertyName("MenuType")]
 		public string MenuType { get; set; } = "selectable";
 	}

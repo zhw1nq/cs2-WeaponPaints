@@ -89,6 +89,7 @@ public partial class WeaponPaints
 	private readonly Dictionary<int, string> _playerWeaponImage = new();
 
 	private static readonly Dictionary<int, DateTime> CommandsCooldown = new();
+	private static readonly Dictionary<int, DateTime> SkinSelectionCooldown = new();
 	internal static Database? Database;
 
 	private static readonly MemoryFunctionVoid<nint, string, float> CAttributeListSetOrAddAttributeValueByName = new(GameData.GetSignature("CAttributeList_SetOrAddAttributeValueByName"));
@@ -159,4 +160,5 @@ public partial class WeaponPaints
 	private readonly ConcurrentDictionary<int, ConcurrentDictionary<int, float>> _temporaryPlayerWeaponWear = new();
 
 	private int _fadeSeed;
+	internal List<CCSPlayerController> Players = [];
 }
