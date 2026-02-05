@@ -8,32 +8,32 @@ using Microsoft.Extensions.Logging;
 
 namespace WeaponPaints
 {
-	public partial class WeaponPaints
-	{
-		private bool _mvpPlayed;
-		
-		[GameEventHandler]
-		public HookResult OnClientFullConnect(EventPlayerConnectFull @event, GameEventInfo info)
-     	{
-			CCSPlayerController? player = @event.Userid;
+    public partial class WeaponPaints
+    {
+        private bool _mvpPlayed;
 
-			if (player is null || !player.IsValid || player.IsBot ||
-				WeaponSync == null || Database == null) return HookResult.Continue;
+        [GameEventHandler]
+        public HookResult OnClientFullConnect(EventPlayerConnectFull @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
 
-			var playerInfo = new PlayerInfo
-			{
-				UserId = player.UserId,
-				Slot = player.Slot,
-				Index = (int)player.Index,
-				SteamId = player.SteamID.ToString(),
-				Name = player.PlayerName,
-				IpAddress = player.IpAddress?.Split(":")[0]
-			};
+            if (player is null || !player.IsValid || player.IsBot ||
+                WeaponSync == null || Database == null) return HookResult.Continue;
 
-			try
-			{
-				_ = Task.Run(async () => await WeaponSync.GetPlayerData(playerInfo));
-				/*
+            var playerInfo = new PlayerInfo
+            {
+                UserId = player.UserId,
+                Slot = player.Slot,
+                Index = (int)player.Index,
+                SteamId = player.SteamID.ToString(),
+                Name = player.PlayerName,
+                IpAddress = player.IpAddress?.Split(":")[0]
+            };
+
+            try
+            {
+                _ = Task.Run(async () => await WeaponSync.GetPlayerData(playerInfo));
+                /*
 				if (Config.Additional.SkinEnabled)
 				{
 					_ = Task.Run(async () => await weaponSync.GetWeaponPaintsFromDatabase(playerInfo));
@@ -55,298 +55,313 @@ namespace WeaponPaints
 					_ = Task.Run(async () => await weaponSync.GetMusicFromDatabase(playerInfo));
 				}
 				*/
-			}
-			catch
-			{
-			}
-			
-			Players.Add(player);
+            }
+            catch
+            {
+            }
 
-			return HookResult.Continue;
-		}
+            Players.Add(player);
 
-		[GameEventHandler]
-		public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
-		{
-			CCSPlayerController? player = @event.Userid;
+            return HookResult.Continue;
+        }
 
-			if (player is null || !player.IsValid || player.IsBot) return HookResult.Continue;
+        [GameEventHandler]
+        public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
 
-			var playerInfo = new PlayerInfo
-			{
-				UserId = player.UserId,
-				Slot = player.Slot,
-				Index = (int)player.Index,
-				SteamId = player.SteamID.ToString(),
-				Name = player.PlayerName,
-				IpAddress = player.IpAddress?.Split(":")[0]
-			};
+            if (player is null || !player.IsValid || player.IsBot) return HookResult.Continue;
 
-			Task.Run(async () => 
-			{
-				if (WeaponSync != null)
-					await WeaponSync.SyncStatTrakToDatabase(playerInfo);
+            var playerInfo = new PlayerInfo
+            {
+                UserId = player.UserId,
+                Slot = player.Slot,
+                Index = (int)player.Index,
+                SteamId = player.SteamID.ToString(),
+                Name = player.PlayerName,
+                IpAddress = player.IpAddress?.Split(":")[0]
+            };
 
-				if (Config.Additional.SkinEnabled)
-				{
-					GPlayerWeaponsInfo.TryRemove(player.Slot, out _);
-				}
-			});
+            Task.Run(async () =>
+            {
+                if (WeaponSync != null)
+                    await WeaponSync.SyncStatTrakToDatabase(playerInfo);
 
-			if (Config.Additional.KnifeEnabled)
-			{
-				GPlayersKnife.TryRemove(player.Slot, out _);
-			}
-			if (Config.Additional.GloveEnabled)
-			{
-				GPlayersGlove.TryRemove(player.Slot, out _);
-			}
-			if (Config.Additional.AgentEnabled)
-			{
-				GPlayersAgent.TryRemove(player.Slot, out _);
-			}
-			if (Config.Additional.MusicEnabled)
-			{
-				GPlayersMusic.TryRemove(player.Slot, out _);
-			}
-			if (Config.Additional.PinsEnabled)
-			{
-				GPlayersPin.TryRemove(player.Slot, out _);
-			}
-			
-			_temporaryPlayerWeaponWear.TryRemove(player.Slot, out _);
-			CommandsCooldown.Remove(player.Slot);
-			Players.Remove(player);
+                if (Config.Additional.SkinEnabled)
+                {
+                    GPlayerWeaponsInfo.TryRemove(player.Slot, out _);
+                }
+            });
 
-			return HookResult.Continue;
-		}
+            if (Config.Additional.KnifeEnabled)
+            {
+                GPlayersKnife.TryRemove(player.Slot, out _);
+            }
+            if (Config.Additional.GloveEnabled)
+            {
+                GPlayersGlove.TryRemove(player.Slot, out _);
+            }
+            if (Config.Additional.AgentEnabled)
+            {
+                GPlayersAgent.TryRemove(player.Slot, out _);
+            }
+            if (Config.Additional.MusicEnabled)
+            {
+                GPlayersMusic.TryRemove(player.Slot, out _);
+            }
+            if (Config.Additional.PinsEnabled)
+            {
+                GPlayersPin.TryRemove(player.Slot, out _);
+            }
 
-		private void OnMapStart(string mapName)
-		{
-			if (Config.Additional is { KnifeEnabled: false, SkinEnabled: false, GloveEnabled: false }) return;
-			
-			if (Database != null)
-				WeaponSync = new WeaponSynchronization(Database, Config);
+            _temporaryPlayerWeaponWear.TryRemove(player.Slot, out _);
+            CommandsCooldown.Remove(player.Slot);
+            Players.Remove(player);
 
-			_fadeSeed = 0;
-			_nextItemId = MinimumCustomItemId;
-		}
+            return HookResult.Continue;
+        }
 
-		private HookResult OnPlayerSpawn(EventPlayerSpawn @event, GameEventInfo info)
-		{
-			CCSPlayerController? player = @event.Userid;
+        private void OnMapStart(string mapName)
+        {
+            if (Config.Additional is { KnifeEnabled: false, SkinEnabled: false, GloveEnabled: false }) return;
 
-			if (player is null || !player.IsValid || Config.Additional is { KnifeEnabled: false, GloveEnabled: false })
-				return HookResult.Continue;
+            if (Database != null)
+                WeaponSync = new WeaponSynchronization(Database, Config);
 
-			CCSPlayerPawn? pawn = player.PlayerPawn.Value;
+            _fadeSeed = 0;
+            _nextItemId = MinimumCustomItemId;
+        }
 
-			if (pawn == null || !pawn.IsValid)
-				return HookResult.Continue;
+        private HookResult OnPlayerSpawn(EventPlayerSpawn @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
 
-			GivePlayerMusicKit(player);
-			GivePlayerAgent(player);
-			Server.NextFrame(() =>
-			{
-				GivePlayerGloves(player);
-			});
-			GivePlayerPin(player);
+            if (player is null || !player.IsValid || Config.Additional is { KnifeEnabled: false, GloveEnabled: false })
+                return HookResult.Continue;
 
-			return HookResult.Continue;
-		}
+            CCSPlayerPawn? pawn = player.PlayerPawn.Value;
 
-		private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
-		{
-			_gBCommandsAllowed = false;
-			return HookResult.Continue;
-		}
+            if (pawn == null || !pawn.IsValid)
+                return HookResult.Continue;
 
-		private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
-		{
-			_gBCommandsAllowed = true;
-			_mvpPlayed = false;
-			return HookResult.Continue;
-		}
-		
-		private HookResult OnRoundMvp(EventRoundMvp @event, GameEventInfo info)
-		{
-			if (_mvpPlayed)
-				return HookResult.Continue;
-			
-			var player = @event.Userid;
-			
-			if (player == null || !player.IsValid || player.IsBot)
-				return HookResult.Continue;
+            GivePlayerMusicKit(player);
+            GivePlayerAgent(player);
+            Server.NextFrame(() =>
+            {
+                GivePlayerGloves(player);
+            });
+            GivePlayerPin(player);
 
-			if (!(GPlayersMusic.TryGetValue(player.Slot, out var musicInfo)
-			      && musicInfo.TryGetValue(player.Team, out var musicId)
-			      && musicId != 0))
-				return HookResult.Continue;
-					
-			@event.Musickitid = musicId;
-			@event.Nomusic = 0;
-			info.DontBroadcast = true;
-			
-			var newEvent = new EventRoundMvp(true)
-			{
-				Userid = player,
-				Musickitid = musicId,
-				Nomusic = 0,
-			};
+            return HookResult.Continue;
+        }
 
-			_mvpPlayed = true;
-			
-			newEvent.FireEvent(false);
-			return HookResult.Continue;
-		}
+        private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
+        {
+            _gBCommandsAllowed = false;
+            return HookResult.Continue;
+        }
 
-		private HookResult OnGiveNamedItemPost(DynamicHook hook)
-		{
-			try
-			{
-				var itemServices = hook.GetParam<CCSPlayer_ItemServices>(0);
-				var weapon = hook.GetReturn<CBasePlayerWeapon>();
-				if (!weapon.DesignerName.Contains("weapon"))
-					return HookResult.Continue;
+        private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
+        {
+            _gBCommandsAllowed = true;
+            _mvpPlayed = false;
+            return HookResult.Continue;
+        }
 
-				var player = GetPlayerFromItemServices(itemServices);
-				if (player != null)
-				{
-					GivePlayerWeaponSkin(player, weapon);
-				}
-			}
-			catch { }
+        private HookResult OnRoundMvp(EventRoundMvp @event, GameEventInfo info)
+        {
+            if (_mvpPlayed)
+                return HookResult.Continue;
 
-			return HookResult.Continue;
-		}
+            var player = @event.Userid;
 
-		private void OnEntityCreated(CEntityInstance entity)
-		{
-			var designerName = entity.DesignerName;
+            if (player == null || !player.IsValid || player.IsBot)
+                return HookResult.Continue;
 
-			if (designerName.Contains("weapon"))
-			{
-				Server.NextWorldUpdate(() =>
-				{
-					var weapon = new CBasePlayerWeapon(entity.Handle);
-					if (!weapon.IsValid) return;
+            if (!(GPlayersMusic.TryGetValue(player.Slot, out var musicInfo)
+                  && musicInfo.TryGetValue(player.Team, out var musicId)
+                  && musicId != 0))
+                return HookResult.Continue;
 
-					try
-					{
-						SteamID? steamid = null;
+            @event.Musickitid = musicId;
+            @event.Nomusic = 0;
+            info.DontBroadcast = true;
 
-						if (weapon.OriginalOwnerXuidLow > 0)
-							steamid = new SteamID(weapon.OriginalOwnerXuidLow);
+            var newEvent = new EventRoundMvp(true)
+            {
+                Userid = player,
+                Musickitid = musicId,
+                Nomusic = 0,
+            };
 
-						CCSPlayerController? player;
+            _mvpPlayed = true;
 
-						if (steamid != null && steamid.IsValid())
-						{
-							player = Players.FirstOrDefault(p => p.IsValid && p.SteamID == steamid.SteamId64);
+            newEvent.FireEvent(false);
+            return HookResult.Continue;
+        }
 
-							if (player == null)
-								player = Utilities.GetPlayerFromSteamId(weapon.OriginalOwnerXuidLow);
-						}
-						else
-						{
-							CCSWeaponBaseGun gun = weapon.As<CCSWeaponBaseGun>();
-							player = Utilities.GetPlayerFromIndex((int)weapon.OwnerEntity.Index) ?? Utilities.GetPlayerFromIndex((int)gun.OwnerEntity.Value!.Index);
-						}
+        private HookResult OnGiveNamedItemPost(DynamicHook hook)
+        {
+            try
+            {
+                var itemServices = hook.GetParam<CCSPlayer_ItemServices>(0);
+                var weapon = hook.GetReturn<CBasePlayerWeapon>();
+                if (!weapon.DesignerName.Contains("weapon"))
+                    return HookResult.Continue;
 
-						if (string.IsNullOrEmpty(player?.PlayerName)) return;
-						if (!Utility.IsPlayerValid(player)) return;
-						
-						GivePlayerWeaponSkin(player, weapon);
-					}
-					catch (Exception)
-					{
-					}
-				});
-			}
-		}
+                var player = GetPlayerFromItemServices(itemServices);
+                if (player != null)
+                {
+                    GivePlayerWeaponSkin(player, weapon);
+                }
+            }
+            catch { }
 
-		private void OnTick()
-		{
-			if (!Config.Additional.ShowSkinImage) return;
+            return HookResult.Continue;
+        }
 
-			foreach (var player in Players)
-			{
-				if (_playerWeaponImage.TryGetValue(player.Slot, out var value) && !string.IsNullOrEmpty(value))
-				{
-					player.PrintToCenterHtml("<img src='{PATH}'</img>".Replace("{PATH}", value));
-				}
-			}
-		}
-		
-		[GameEventHandler]
-		public HookResult OnItemPickup(EventItemPickup @event, GameEventInfo _)
-		{
-			// if (!IsWindows) return HookResult.Continue;
-			var player = @event.Userid;
-			if (player == null || !player.IsValid || player.IsBot) return HookResult.Continue;
-			if (!@event.Item.Contains("knife")) return HookResult.Continue;
-		
-			var weaponDefIndex = (int)@event.Defindex;
-				
-			if (!HasChangedKnife(player, out var _) || !HasChangedPaint(player, weaponDefIndex, out var _))
-				return HookResult.Continue;
-			
-			if (player is { Connected: PlayerConnectedState.PlayerConnected, PawnIsAlive: true, PlayerPawn.IsValid: true })
-			{
-				GiveOnItemPickup(player);
-			}
-		
-			return HookResult.Continue;
-		}
+        private void OnEntityCreated(CEntityInstance entity)
+        {
+            var designerName = entity.DesignerName;
 
-		private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
-		{
-			CCSPlayerController? player = @event.Attacker;
-			CCSPlayerController? victim = @event.Userid;
+            if (designerName.Contains("weapon"))
+            {
+                Server.NextWorldUpdate(() =>
+                {
+                    var weapon = new CBasePlayerWeapon(entity.Handle);
+                    if (!weapon.IsValid) return;
 
-			if (player is null || !player.IsValid)
-				return HookResult.Continue;
-			
-			if (victim == null || !victim.IsValid || victim == player)
-				return HookResult.Continue;
-			
-			CBasePlayerWeapon? weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
+                    try
+                    {
+                        SteamID? steamid = null;
 
-			if (weapon == null) return HookResult.Continue;
+                        if (weapon.OriginalOwnerXuidLow > 0)
+                            steamid = new SteamID(weapon.OriginalOwnerXuidLow);
 
-			int weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
+                        CCSPlayerController? player;
 
-			if (!HasChangedPaint(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
-				return HookResult.Continue;
-				
-			if (!weaponInfo.StatTrak) return HookResult.Continue;
-			
-			weaponInfo.StatTrakCount += 1;
-				
-			CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "kill eater", ViewAsFloat((uint)weaponInfo.StatTrakCount));
-			CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "kill eater score type", 0);
-				
-			CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "kill eater", ViewAsFloat((uint)weaponInfo.StatTrakCount));
-			CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "kill eater score type", 0);
+                        if (steamid != null && steamid.IsValid())
+                        {
+                            player = Players.FirstOrDefault(p => p.IsValid && p.SteamID == steamid.SteamId64);
 
-			return HookResult.Continue;
-		}
+                            if (player == null)
+                                player = Utilities.GetPlayerFromSteamId(weapon.OriginalOwnerXuidLow);
+                        }
+                        else
+                        {
+                            CCSWeaponBaseGun gun = weapon.As<CCSWeaponBaseGun>();
+                            player = Utilities.GetPlayerFromIndex((int)weapon.OwnerEntity.Index) ?? Utilities.GetPlayerFromIndex((int)gun.OwnerEntity.Value!.Index);
+                        }
 
-		private void RegisterListeners()
-		{
-			RegisterListener<Listeners.OnMapStart>(OnMapStart);
+                        if (string.IsNullOrEmpty(player?.PlayerName)) return;
+                        if (!Utility.IsPlayerValid(player)) return;
 
-			RegisterEventHandler<EventPlayerSpawn>(OnPlayerSpawn);
-			RegisterEventHandler<EventRoundStart>(OnRoundStart);
-			RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
-			RegisterEventHandler<EventRoundMvp>(OnRoundMvp);
-			RegisterListener<Listeners.OnEntitySpawned>(OnEntityCreated);
-			RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
+                        GivePlayerWeaponSkin(player, weapon);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                });
+            }
+        }
 
-			if (Config.Additional.ShowSkinImage)
-				RegisterListener<Listeners.OnTick>(OnTick);
+        private void OnTick()
+        {
+            foreach (var player in Players)
+            {
+                if (!player.IsValid) continue;
 
-			VirtualFunctions.GiveNamedItemFunc.Hook(OnGiveNamedItemPost, HookMode.Post);
-		}
-	}
+                // Show skin image
+                if (Config.Additional.ShowSkinImage && _playerWeaponImage.TryGetValue(player.Slot, out var value) && !string.IsNullOrEmpty(value))
+                {
+                    player.PrintToCenterHtml("<img src='{PATH}'</img>".Replace("{PATH}", value));
+                }
+                // Show disabled command message (priority over skin image)
+                else if (_playerDisabledMessageEndTime.TryGetValue(player.Slot, out var endTime) && DateTime.UtcNow < endTime)
+                {
+                    var centerMessage = $"<font color='#FF6B6B'>zDevelopment-Vietnam</font><br>" +
+                                       $"<font color='#FFFFFF'>Lệnh này đang tạm thời bị vô hiệu hóa để bảo trì.</font><br>" +
+                                       $"<font color='#90EE90'>Vui lòng sử dụng Changer tại {Config.Website}</font><br>" +
+                                       $"<font color='#FFFFFF'>Reconnect server để áp dụng skin mới hoặc dùng lệnh </font><font color='#90EE90'>!wp</font>";
+                    player.PrintToCenterHtml(centerMessage);
+                }
+                else if (_playerDisabledMessageEndTime.ContainsKey(player.Slot))
+                {
+                    // Remove expired entry
+                    _playerDisabledMessageEndTime.Remove(player.Slot);
+                }
+            }
+        }
+
+        [GameEventHandler]
+        public HookResult OnItemPickup(EventItemPickup @event, GameEventInfo _)
+        {
+            // if (!IsWindows) return HookResult.Continue;
+            var player = @event.Userid;
+            if (player == null || !player.IsValid || player.IsBot) return HookResult.Continue;
+            if (!@event.Item.Contains("knife")) return HookResult.Continue;
+
+            var weaponDefIndex = (int)@event.Defindex;
+
+            if (!HasChangedKnife(player, out var _) || !HasChangedPaint(player, weaponDefIndex, out var _))
+                return HookResult.Continue;
+
+            if (player is { Connected: PlayerConnectedState.PlayerConnected, PawnIsAlive: true, PlayerPawn.IsValid: true })
+            {
+                GiveOnItemPickup(player);
+            }
+
+            return HookResult.Continue;
+        }
+
+        private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Attacker;
+            CCSPlayerController? victim = @event.Userid;
+
+            if (player is null || !player.IsValid)
+                return HookResult.Continue;
+
+            if (victim == null || !victim.IsValid || victim == player)
+                return HookResult.Continue;
+
+            CBasePlayerWeapon? weapon = player.PlayerPawn.Value?.WeaponServices?.ActiveWeapon.Value;
+
+            if (weapon == null) return HookResult.Continue;
+
+            int weaponDefIndex = weapon.AttributeManager.Item.ItemDefinitionIndex;
+
+            if (!HasChangedPaint(player, weaponDefIndex, out var weaponInfo) || weaponInfo == null)
+                return HookResult.Continue;
+
+            if (!weaponInfo.StatTrak) return HookResult.Continue;
+
+            weaponInfo.StatTrakCount += 1;
+
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "kill eater", ViewAsFloat((uint)weaponInfo.StatTrakCount));
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle, "kill eater score type", 0);
+
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "kill eater", ViewAsFloat((uint)weaponInfo.StatTrakCount));
+            CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.AttributeList.Handle, "kill eater score type", 0);
+
+            return HookResult.Continue;
+        }
+
+        private void RegisterListeners()
+        {
+            RegisterListener<Listeners.OnMapStart>(OnMapStart);
+
+            RegisterEventHandler<EventPlayerSpawn>(OnPlayerSpawn);
+            RegisterEventHandler<EventRoundStart>(OnRoundStart);
+            RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
+            RegisterEventHandler<EventRoundMvp>(OnRoundMvp);
+            RegisterListener<Listeners.OnEntitySpawned>(OnEntityCreated);
+            RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
+
+            // Always register OnTick for disabled command messages and skin images
+            RegisterListener<Listeners.OnTick>(OnTick);
+
+            VirtualFunctions.GiveNamedItemFunc.Hook(OnGiveNamedItemPost, HookMode.Post);
+        }
+    }
 }

@@ -23,9 +23,4 @@
     <None Update="gamedata\*.*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="MenuManagerApi">
-      <HintPath>3rd_party\MenuManagerApi.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 </Project>
