@@ -23,4 +23,10 @@
     <None Update="gamedata\*.*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="KitsuneMenu">
+      <HintPath>3rd_party\KitsuneMenu.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

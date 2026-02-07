@@ -262,20 +262,5 @@ namespace WeaponPaints
                 logger.LogError(ex, "An error occurred while checking version.");
             }
         }
-
-        internal static void ShowAd(string moduleVersion)
-        {
-            Console.WriteLine(" ");
-            Console.WriteLine(" _     _  _______  _______  _______  _______  __    _  _______  _______  ___   __    _  _______  _______ ");
-            Console.WriteLine("| | _ | ||       ||   _   ||       ||       ||  |  | ||       ||   _   ||   | |  |  | ||       ||       |");
-            Console.WriteLine("| || || ||    ___||  |_|  ||    _  ||   _   ||   |_| ||    _  ||  |_|  ||   | |   |_| ||_     _||  _____|");
-            Console.WriteLine("|       ||   |___ |       ||   |_| ||  | |  ||       ||   |_| ||       ||   | |       |  |   |  | |_____ ");
-            Console.WriteLine("|       ||    ___||       ||    ___||  |_|  ||  _    ||    ___||       ||   | |  _    |  |   |  |_____  |");
-            Console.WriteLine("|   _   ||   |___ |   _   ||   |    |       || | |   ||   |    |   _   ||   | | | |   |  |   |   _____| |");
-            Console.WriteLine("|__| |__||_______||__| |__||___|    |_______||_|  |__||___|    |__| |__||___| |_|  |__|  |___|  |_______|");
-            Console.WriteLine("						>> Version: " + moduleVersion);
-            Console.WriteLine("			>> GitHub: https://github.com/Nereziel/cs2-WeaponPaints");
-            Console.WriteLine(" ");
-        }
     }
 }

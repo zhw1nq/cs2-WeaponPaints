@@ -4,7 +4,8 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using CounterStrikeSharp.API.Modules.Utils;
-// using MenuManager; // MENU_DISABLED: MenuManagerCS2 dependency temporarily disabled
+using Menu;
+using Menu.Enums;
 using Microsoft.Extensions.Localization;
 using Newtonsoft.Json.Linq;
 
@@ -165,9 +166,8 @@ public partial class WeaponPaints
 
     private readonly ConcurrentDictionary<int, ConcurrentDictionary<int, float>> _temporaryPlayerWeaponWear = new();
 
-    // MENU_DISABLED: MenuManagerCS2 dependency temporarily disabled
-    // internal static IMenuApi? MenuApi;
-    // private static readonly PluginCapability<IMenuApi> MenuCapability = new("menu:nfcore");
+    // KitsuneMenu
+    public static KitsuneMenu Menu { get; set; } = null!;
 
     private int _fadeSeed;
 

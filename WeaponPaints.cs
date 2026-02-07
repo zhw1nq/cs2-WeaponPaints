@@ -6,6 +6,8 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using Microsoft.Extensions.Logging;
+using Menu;
+using Menu.Enums;
 using MySqlConnector;
 
 namespace WeaponPaints;
@@ -109,41 +111,23 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
         _localizer = Localizer;
 
         Utility.Config = config;
-        Utility.ShowAd(ModuleVersion);
         Task.Run(async () => await Utility.CheckVersion(ModuleVersion, Logger));
     }
 
     public override void OnAllPluginsLoaded(bool hotReload)
     {
-        /* MENU_DISABLED: MenuManagerCS2 dependency temporarily disabled
-		try
-		{
-			MenuApi = MenuCapability.Get();
-			
-			if (Config.Additional.KnifeEnabled)
-				SetupKnifeMenu();
-			if (Config.Additional.SkinEnabled)
-				SetupSkinsMenu();
-			if (Config.Additional.GloveEnabled)
-				SetupGlovesMenu();
-			if (Config.Additional.AgentEnabled)
-				SetupAgentsMenu();
-			if (Config.Additional.MusicEnabled)
-				SetupMusicMenu();
-			if (Config.Additional.PinsEnabled)
-				SetupPinsMenu();
-		
-			RegisterCommands();
-		}
-		catch (Exception)
-		{
-			MenuApi = null;
-			Logger.LogError("Error while loading required plugins");
-			throw;
-		}
-		*/
-
-        // Only register commands when menus are disabled
-        RegisterCommands();
+        try
+        {
+            Menu = new KitsuneMenu(this);
+            RegisterCommands();
+            Logger.LogInformation("WeaponPaints menus initialized with KitsuneMenu");
+        }
+        catch (Exception ex)
+        {
+            Menu = null!;
+            Logger.LogError("Error while loading KitsuneMenu: {Message}", ex.Message);
+            // Fallback: still register commands without menu
+            RegisterCommands();
+        }
     }
 }

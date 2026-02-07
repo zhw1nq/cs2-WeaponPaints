@@ -6,6 +6,8 @@ using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using Newtonsoft.Json.Linq;
+using Menu;
+using Menu.Enums;
 
 namespace WeaponPaints;
 
@@ -149,88 +151,702 @@ public partial class WeaponPaints
             });
         }
 
-        // MENU_DISABLED: Register disabled menu commands with notification
-        RegisterDisabledMenuCommands();
+        // Register menu commands with KitsuneMenu
+        RegisterMenuCommands();
     }
 
-    private void RegisterDisabledMenuCommands()
+    private void RegisterMenuCommands()
     {
         // Register knife commands
-        _config.Additional.CommandKnife.ForEach(c =>
+        if (Config.Additional.KnifeEnabled)
         {
-            AddCommand($"css_{c}", "Knife Menu (Disabled)", (player, _) =>
+            _config.Additional.CommandKnife.ForEach(c =>
             {
-                if (player == null || !Utility.IsPlayerValid(player)) return;
-                ShowDisabledCommandMessage(player);
+                AddCommand($"css_{c}", "Knife Menu", (player, _) =>
+                {
+                    if (player == null || !Utility.IsPlayerValid(player) || Menu == null) return;
+                    if (!_gBCommandsAllowed) return;
+
+                    if (!CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime) ||
+                        DateTime.UtcNow >= cooldownEndTime)
+                    {
+                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
+                        OpenKnifeMenu(player);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
+                            player.Print(Localizer["wp_command_cooldown"]);
+                    }
+                });
             });
-        });
+        }
 
         // Register skin selection commands
-        _config.Additional.CommandSkinSelection.ForEach(c =>
+        if (Config.Additional.SkinEnabled)
         {
-            AddCommand($"css_{c}", "Skins selection menu (Disabled)", (player, _) =>
+            _config.Additional.CommandSkinSelection.ForEach(c =>
             {
-                if (player == null || !Utility.IsPlayerValid(player)) return;
-                ShowDisabledCommandMessage(player);
+                AddCommand($"css_{c}", "Skins selection menu", (player, _) =>
+                {
+                    if (player == null || !Utility.IsPlayerValid(player) || Menu == null) return;
+                    if (!_gBCommandsAllowed) return;
+
+                    if (!CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime) ||
+                        DateTime.UtcNow >= cooldownEndTime)
+                    {
+                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
+                        OpenSkinsMenu(player);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
+                            player.Print(Localizer["wp_command_cooldown"]);
+                    }
+                });
             });
-        });
+        }
 
         // Register glove commands
-        _config.Additional.CommandGlove.ForEach(c =>
+        if (Config.Additional.GloveEnabled)
         {
-            AddCommand($"css_{c}", "Gloves selection menu (Disabled)", (player, _) =>
+            _config.Additional.CommandGlove.ForEach(c =>
             {
-                if (player == null || !Utility.IsPlayerValid(player)) return;
-                ShowDisabledCommandMessage(player);
+                AddCommand($"css_{c}", "Gloves selection menu", (player, _) =>
+                {
+                    if (player == null || !Utility.IsPlayerValid(player) || Menu == null) return;
+                    if (!_gBCommandsAllowed) return;
+
+                    if (!CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime) ||
+                        DateTime.UtcNow >= cooldownEndTime)
+                    {
+                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
+                        OpenGlovesMenu(player);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
+                            player.Print(Localizer["wp_command_cooldown"]);
+                    }
+                });
             });
-        });
+        }
 
         // Register agent commands
-        _config.Additional.CommandAgent.ForEach(c =>
+        if (Config.Additional.AgentEnabled)
         {
-            AddCommand($"css_{c}", "Agents selection menu (Disabled)", (player, _) =>
+            _config.Additional.CommandAgent.ForEach(c =>
             {
-                if (player == null || !Utility.IsPlayerValid(player)) return;
-                ShowDisabledCommandMessage(player);
+                AddCommand($"css_{c}", "Agents selection menu", (player, _) =>
+                {
+                    if (player == null || !Utility.IsPlayerValid(player) || Menu == null) return;
+                    if (!_gBCommandsAllowed) return;
+
+                    if (!CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime) ||
+                        DateTime.UtcNow >= cooldownEndTime)
+                    {
+                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
+                        OpenAgentsMenu(player);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
+                            player.Print(Localizer["wp_command_cooldown"]);
+                    }
+                });
             });
-        });
+        }
 
         // Register music commands
-        _config.Additional.CommandMusic.ForEach(c =>
+        if (Config.Additional.MusicEnabled)
         {
-            AddCommand($"css_{c}", "Music selection menu (Disabled)", (player, _) =>
+            _config.Additional.CommandMusic.ForEach(c =>
             {
-                if (player == null || !Utility.IsPlayerValid(player)) return;
-                ShowDisabledCommandMessage(player);
+                AddCommand($"css_{c}", "Music selection menu", (player, _) =>
+                {
+                    if (player == null || !Utility.IsPlayerValid(player) || Menu == null) return;
+                    if (!_gBCommandsAllowed) return;
+
+                    if (!CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime) ||
+                        DateTime.UtcNow >= cooldownEndTime)
+                    {
+                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
+                        OpenMusicMenu(player);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
+                            player.Print(Localizer["wp_command_cooldown"]);
+                    }
+                });
             });
-        });
+        }
 
         // Register pin commands
-        _config.Additional.CommandPin.ForEach(c =>
+        if (Config.Additional.PinsEnabled)
         {
-            AddCommand($"css_{c}", "Pin selection menu (Disabled)", (player, _) =>
+            _config.Additional.CommandPin.ForEach(c =>
             {
-                if (player == null || !Utility.IsPlayerValid(player)) return;
-                ShowDisabledCommandMessage(player);
+                AddCommand($"css_{c}", "Pin selection menu", (player, _) =>
+                {
+                    if (player == null || !Utility.IsPlayerValid(player) || Menu == null) return;
+                    if (!_gBCommandsAllowed) return;
+
+                    if (!CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime) ||
+                        DateTime.UtcNow >= cooldownEndTime)
+                    {
+                        CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
+                        OpenPinsMenu(player);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
+                            player.Print(Localizer["wp_command_cooldown"]);
+                    }
+                });
             });
-        });
+        }
     }
 
-    private void ShowDisabledCommandMessage(CCSPlayerController player)
+    #region KitsuneMenu Methods
+
+    private void OpenKnifeMenu(CCSPlayerController player)
     {
-        // Chat message
-        var chatMessage = $" {ChatColors.LightRed}zDevelopment-Vietnam:{ChatColors.Default} Lệnh này đang tạm thời bị vô hiệu hóa để bảo trì.";
-        var chatMessage2 = $" Vui lòng sử dụng Changer tại {ChatColors.Green}{Config.Website}{ChatColors.Default}, reconnect server để áp dụng skin mới hoặc dùng lệnh {ChatColors.Green}!wp";
+        var knivesOnly = WeaponList
+            .Where(pair => pair.Key.StartsWith("weapon_knife") || pair.Key.StartsWith("weapon_bayonet"))
+            .ToDictionary(pair => pair.Key, pair => pair.Value);
 
-        player.PrintToChat(chatMessage);
-        player.PrintToChat(chatMessage2);
+        List<MenuItem> items = new();
+        var optionMap = new Dictionary<int, string>();
+        int i = 0;
 
-        // Set CenterHtml message display time (3 seconds) - handled by OnTick
-        _playerDisabledMessageEndTime[player.Slot] = DateTime.UtcNow.AddSeconds(3);
+        foreach (var knifePair in knivesOnly)
+        {
+            items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(knifePair.Value)]));
+            optionMap[i++] = knifePair.Key;
+        }
 
-        // Play disabled sound
-        player.ExecuteClientCommand("play sounds/zui/menuui/zdisabled.vsnd_c");
+        if (items.Count == 0) return;
+
+        Menu.ShowScrollableMenu(
+            player,
+            Localizer["wp_knife_menu_title"],
+            items,
+            (buttons, menu, selected) =>
+            {
+                if (selected == null || buttons != MenuButtons.Select) return;
+                if (!optionMap.TryGetValue(menu.Option, out var knifeKey)) return;
+                if (!Utility.IsPlayerValid(player)) return;
+
+                var playerKnives = GPlayersKnife.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, string>());
+                var teamsToCheck = player.TeamNum < 2
+                    ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
+                    : [player.Team];
+
+                var knifeName = knivesOnly[knifeKey];
+                if (!string.IsNullOrEmpty(Localizer["wp_knife_menu_select"]))
+                    player.Print(Localizer["wp_knife_menu_select", knifeName]);
+
+                if (!string.IsNullOrEmpty(Localizer["wp_knife_menu_kill"]) && Config.Additional.CommandKillEnabled)
+                    player.Print(Localizer["wp_knife_menu_kill"]);
+
+                PlayerInfo playerInfo = new()
+                {
+                    UserId = player.UserId,
+                    Slot = player.Slot,
+                    Index = (int)player.Index,
+                    SteamId = player.SteamID.ToString(),
+                    Name = player.PlayerName,
+                    IpAddress = player.IpAddress?.Split(":")[0]
+                };
+
+                foreach (var team in teamsToCheck)
+                    playerKnives[team] = knifeKey;
+
+                if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
+                    RefreshWeapons(player);
+
+                if (WeaponSync != null)
+                    _ = Task.Run(async () => await WeaponSync.SyncKnifeToDatabase(playerInfo, knifeKey, teamsToCheck));
+            },
+            false, Config.Additional.MenuFreezePlayer);
     }
+
+    private void OpenSkinsMenu(CCSPlayerController player)
+    {
+        var classNamesByWeapon = WeaponList
+            .Except([new KeyValuePair<string, string>("weapon_knife", "Default Knife")])
+            .Where(kvp => !kvp.Key.StartsWith("weapon_knife") && !kvp.Key.StartsWith("weapon_bayonet"))
+            .ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+
+        List<MenuItem> items = new();
+        var optionMap = new Dictionary<int, string>();
+        int i = 0;
+
+        foreach (var weaponName in classNamesByWeapon.Keys)
+        {
+            items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(weaponName)]));
+            optionMap[i++] = weaponName;
+        }
+
+        if (items.Count == 0) return;
+
+        Menu.ShowScrollableMenu(
+            player,
+            Localizer["wp_skin_menu_weapon_title"],
+            items,
+            (buttons, menu, selected) =>
+            {
+                if (selected == null || buttons != MenuButtons.Select) return;
+                if (!optionMap.TryGetValue(menu.Option, out var selectedWeapon)) return;
+                if (!Utility.IsPlayerValid(player)) return;
+                if (!classNamesByWeapon.TryGetValue(selectedWeapon, out var selectedWeaponClassname)) return;
+
+                OpenSkinSubMenu(player, selectedWeapon, selectedWeaponClassname);
+            },
+            false, Config.Additional.MenuFreezePlayer);
+    }
+
+    private void OpenSkinSubMenu(CCSPlayerController player, string weaponDisplayName, string weaponClassname)
+    {
+        var skinsForSelectedWeapon = SkinsList.Where(skin =>
+            skin.TryGetValue("weapon_name", out var weaponName) &&
+            weaponName?.ToString() == weaponClassname
+        ).ToList();
+
+        List<MenuItem> items = new();
+        var optionMap = new Dictionary<int, (int paintId, int weaponDefIndex)>();
+        int i = 0;
+
+        foreach (var skin in skinsForSelectedWeapon)
+        {
+            if (!skin.TryGetValue("paint_name", out var paintNameObj) ||
+                !skin.TryGetValue("paint", out var paintObj) ||
+                !skin.TryGetValue("weapon_defindex", out var defIndexObj)) continue;
+
+            var paintName = paintNameObj?.ToString();
+            var paint = paintObj?.ToString();
+            if (!int.TryParse(paint, out var paintId)) continue;
+            if (!int.TryParse(defIndexObj?.ToString(), out var weaponDefIndex)) continue;
+
+            if (!string.IsNullOrEmpty(paintName) && !string.IsNullOrEmpty(paint))
+            {
+                items.Add(new MenuItem(MenuItemType.Button, [new MenuValue($"{paintName} ({paint})")]));
+                optionMap[i++] = (paintId, weaponDefIndex);
+            }
+        }
+
+        if (items.Count == 0) return;
+
+        Menu.ShowScrollableMenu(
+            player,
+            Localizer["wp_skin_menu_skin_title", weaponDisplayName],
+            items,
+            (buttons, menu, selected) =>
+            {
+                if (selected == null || buttons != MenuButtons.Select) return;
+                if (!optionMap.TryGetValue(menu.Option, out var skinData)) return;
+                if (!Utility.IsPlayerValid(player)) return;
+
+                var (paintId, weaponDefIndex) = skinData;
+
+                if (Config.Additional.ShowSkinImage)
+                {
+                    var foundSkin = SkinsList.FirstOrDefault(skin =>
+                        ((int?)skin["weapon_defindex"] ?? 0) == weaponDefIndex &&
+                        ((int?)skin["paint"] ?? 0) == paintId &&
+                        skin["image"] != null
+                    );
+                    var image = foundSkin?["image"]?.ToString() ?? "";
+                    _playerWeaponImage[player.Slot] = image;
+                    AddTimer(2.0f, () => _playerWeaponImage.Remove(player.Slot), TimerFlags.STOP_ON_MAPCHANGE);
+                }
+
+                player.Print(Localizer["wp_skin_menu_select", weaponDisplayName]);
+
+                var playerSkins = GPlayerWeaponsInfo.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
+                var teamsToCheck = player.TeamNum < 2
+                    ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
+                    : [player.Team];
+
+                foreach (var team in teamsToCheck)
+                {
+                    var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
+                    var value = teamWeapons.GetOrAdd(weaponDefIndex, _ => new WeaponInfo());
+                    value.Paint = paintId;
+                    value.Wear = 0.01f;
+                    value.Seed = 0;
+                }
+
+                var playerInfo = new PlayerInfo
+                {
+                    UserId = player.UserId,
+                    Slot = player.Slot,
+                    Index = (int)player.Index,
+                    SteamId = player.SteamID.ToString(),
+                    Name = player.PlayerName,
+                    IpAddress = player.IpAddress?.Split(":")[0]
+                };
+
+                if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE && WeaponSync != null)
+                {
+                    RefreshWeapons(player);
+                    _ = Task.Run(async () => await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo));
+                }
+            },
+            false, Config.Additional.MenuFreezePlayer);
+    }
+
+    private void OpenGlovesMenu(CCSPlayerController player)
+    {
+        List<MenuItem> items = new();
+        var optionMap = new Dictionary<int, (int weaponDefindex, int paint, string image)>();
+        int i = 0;
+
+        // Add "None" option
+        items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(Localizer["None"])]));
+        optionMap[i++] = (0, 0, "");
+
+        foreach (var gloveObject in GlovesList)
+        {
+            var paintName = gloveObject["paint_name"]?.ToString() ?? "";
+            if (paintName.Length == 0) continue;
+
+            if (!gloveObject.ContainsKey("weapon_defindex") || !gloveObject.ContainsKey("paint")) continue;
+            if (!int.TryParse(gloveObject["weapon_defindex"]?.ToString(), out var weaponDefindex)) continue;
+            if (!int.TryParse(gloveObject["paint"]?.ToString(), out var paint)) continue;
+
+            var image = gloveObject["image"]?.ToString() ?? "";
+            items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(paintName)]));
+            optionMap[i++] = (weaponDefindex, paint, image);
+        }
+
+        if (items.Count == 0) return;
+
+        Menu.ShowScrollableMenu(
+            player,
+            Localizer["wp_glove_menu_title"],
+            items,
+            (buttons, menu, selected) =>
+            {
+                if (selected == null || buttons != MenuButtons.Select) return;
+                if (!optionMap.TryGetValue(menu.Option, out var gloveData)) return;
+                if (!Utility.IsPlayerValid(player)) return;
+
+                var (weaponDefindex, paint, image) = gloveData;
+                var playerGloves = GPlayersGlove.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
+                var teamsToCheck = player.TeamNum < 2
+                    ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
+                    : [player.Team];
+
+                if (Config.Additional.ShowSkinImage && !string.IsNullOrEmpty(image))
+                {
+                    _playerWeaponImage[player.Slot] = image;
+                    AddTimer(2.0f, () => _playerWeaponImage.Remove(player.Slot), TimerFlags.STOP_ON_MAPCHANGE);
+                }
+
+                PlayerInfo playerInfo = new()
+                {
+                    UserId = player.UserId,
+                    Slot = player.Slot,
+                    Index = (int)player.Index,
+                    SteamId = player.SteamID.ToString(),
+                    Name = player.PlayerName,
+                    IpAddress = player.IpAddress?.Split(":")[0]
+                };
+
+                if (paint != 0)
+                {
+                    if (!GPlayerWeaponsInfo.ContainsKey(player.Slot))
+                        GPlayerWeaponsInfo[player.Slot] = new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>();
+
+                    foreach (var team in teamsToCheck)
+                    {
+                        if (!GPlayerWeaponsInfo[player.Slot].ContainsKey(team))
+                            GPlayerWeaponsInfo[player.Slot][team] = new ConcurrentDictionary<int, WeaponInfo>();
+
+                        playerGloves[team] = (ushort)weaponDefindex;
+
+                        if (!GPlayerWeaponsInfo[player.Slot][team].ContainsKey(weaponDefindex))
+                        {
+                            WeaponInfo weaponInfo = new() { Paint = paint };
+                            GPlayerWeaponsInfo[player.Slot][team][weaponDefindex] = weaponInfo;
+                        }
+                    }
+                }
+                else
+                {
+                    GPlayersGlove.TryRemove(player.Slot, out _);
+                }
+
+                if (WeaponSync != null)
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        foreach (var team in teamsToCheck)
+                        {
+                            await WeaponSync.SyncGloveToDatabase(playerInfo, (ushort)weaponDefindex, teamsToCheck);
+
+                            if (!GPlayerWeaponsInfo[playerInfo.Slot][team].TryGetValue(weaponDefindex, out var value))
+                            {
+                                value = new WeaponInfo();
+                                GPlayerWeaponsInfo[playerInfo.Slot][team][weaponDefindex] = value;
+                            }
+
+                            value.Paint = paint;
+                            value.Wear = 0.00f;
+                            value.Seed = 0;
+
+                            await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo);
+                        }
+                    });
+                }
+
+                AddTimer(0.1f, () => GivePlayerGloves(player));
+                AddTimer(0.25f, () => GivePlayerGloves(player));
+            },
+            false, Config.Additional.MenuFreezePlayer);
+    }
+
+    private void OpenAgentsMenu(CCSPlayerController player)
+    {
+        var filteredAgents = AgentsList.Where(agentObject =>
+        {
+            if (agentObject["team"]?.Value<int>() is { } teamNum)
+                return teamNum == player.TeamNum;
+            return false;
+        }).ToList();
+
+        List<MenuItem> items = new();
+        var optionMap = new Dictionary<int, JObject>();
+        int i = 0;
+
+        // Add "None" option
+        items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(Localizer["None"])]));
+        optionMap[i++] = null!;
+
+        foreach (var agentObject in filteredAgents)
+        {
+            var paintName = agentObject["agent_name"]?.ToString() ?? "";
+            if (paintName.Length > 0)
+            {
+                items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(paintName)]));
+                optionMap[i++] = agentObject;
+            }
+        }
+
+        if (items.Count == 0) return;
+
+        Menu.ShowScrollableMenu(
+            player,
+            Localizer["wp_agent_menu_title"],
+            items,
+            (buttons, menu, selected) =>
+            {
+                if (selected == null || buttons != MenuButtons.Select) return;
+                if (!optionMap.TryGetValue(menu.Option, out var selectedAgent)) return;
+                if (!Utility.IsPlayerValid(player)) return;
+
+                PlayerInfo playerInfo = new()
+                {
+                    UserId = player.UserId,
+                    Slot = player.Slot,
+                    Index = (int)player.Index,
+                    SteamId = player.SteamID.ToString(),
+                    Name = player.PlayerName,
+                    IpAddress = player.IpAddress?.Split(":")[0]
+                };
+
+                if (selectedAgent == null)
+                {
+                    // Reset agent
+                    if (player.TeamNum == 3)
+                        GPlayersAgent.AddOrUpdate(player.Slot, _ => (null, null), (_, oldValue) => (null, oldValue.T));
+                    else
+                        GPlayersAgent.AddOrUpdate(player.Slot, _ => (null, null), (_, oldValue) => (oldValue.CT, null));
+
+                    if (!string.IsNullOrEmpty(Localizer["wp_agent_menu_select"]))
+                        player.Print(Localizer["wp_agent_menu_select", Localizer["None"]]);
+
+                    if (WeaponSync != null)
+                        _ = Task.Run(async () => await WeaponSync.SyncAgentToDatabase(playerInfo));
+                    return;
+                }
+
+                if (selectedAgent.ContainsKey("model"))
+                {
+                    var selectedPaintName = selectedAgent["agent_name"]?.ToString() ?? "";
+
+                    if (Config.Additional.ShowSkinImage)
+                    {
+                        var image = selectedAgent["image"]?.ToString() ?? "";
+                        _playerWeaponImage[player.Slot] = image;
+                        AddTimer(2.0f, () => _playerWeaponImage.Remove(player.Slot), TimerFlags.STOP_ON_MAPCHANGE);
+                    }
+
+                    if (!string.IsNullOrEmpty(Localizer["wp_agent_menu_select"]))
+                        player.Print(Localizer["wp_agent_menu_select", selectedPaintName]);
+
+                    var modelValue = selectedAgent["model"]!.ToString();
+                    var modelOrNull = modelValue.Equals("null") ? null : modelValue;
+
+                    if (player.TeamNum == 3)
+                        GPlayersAgent.AddOrUpdate(player.Slot, _ => (modelOrNull, null), (_, oldValue) => (modelOrNull, oldValue.T));
+                    else
+                        GPlayersAgent.AddOrUpdate(player.Slot, _ => (null, modelOrNull), (_, oldValue) => (oldValue.CT, modelOrNull));
+
+                    if (WeaponSync != null)
+                        _ = Task.Run(async () => await WeaponSync.SyncAgentToDatabase(playerInfo));
+                }
+            },
+            false, Config.Additional.MenuFreezePlayer);
+    }
+
+    private void OpenMusicMenu(CCSPlayerController player)
+    {
+        List<MenuItem> items = new();
+        var optionMap = new Dictionary<int, (int id, string image)>();
+        int i = 0;
+
+        // Add "None" option
+        items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(Localizer["None"])]));
+        optionMap[i++] = (0, "");
+
+        foreach (var musicObject in MusicList)
+        {
+            var paintName = musicObject["name"]?.ToString() ?? "";
+            if (paintName.Length == 0) continue;
+
+            if (!musicObject.ContainsKey("id")) continue;
+            if (!int.TryParse(musicObject["id"]?.ToString(), out var id)) continue;
+
+            var image = musicObject["image"]?.ToString() ?? "";
+            items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(paintName)]));
+            optionMap[i++] = (id, image);
+        }
+
+        if (items.Count == 0) return;
+
+        Menu.ShowScrollableMenu(
+            player,
+            Localizer["wp_music_menu_title"],
+            items,
+            (buttons, menu, selected) =>
+            {
+                if (selected == null || buttons != MenuButtons.Select) return;
+                if (!optionMap.TryGetValue(menu.Option, out var musicData)) return;
+                if (!Utility.IsPlayerValid(player)) return;
+
+                var (paint, image) = musicData;
+                var playerMusic = GPlayersMusic.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
+                var teamsToCheck = player.TeamNum < 2
+                    ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
+                    : [player.Team];
+
+                if (Config.Additional.ShowSkinImage && !string.IsNullOrEmpty(image))
+                {
+                    _playerWeaponImage[player.Slot] = image;
+                    AddTimer(2.0f, () => _playerWeaponImage.Remove(player.Slot), TimerFlags.STOP_ON_MAPCHANGE);
+                }
+
+                PlayerInfo playerInfo = new()
+                {
+                    UserId = player.UserId,
+                    Slot = player.Slot,
+                    Index = (int)player.Index,
+                    SteamId = player.SteamID.ToString(),
+                    Name = player.PlayerName,
+                    IpAddress = player.IpAddress?.Split(":")[0]
+                };
+
+                foreach (var team in teamsToCheck)
+                    playerMusic[team] = (ushort)paint;
+
+                GivePlayerMusicKit(player);
+
+                var selectedName = paint == 0 ? Localizer["None"] : optionMap.FirstOrDefault(x => x.Value.id == paint).Value.ToString();
+                if (!string.IsNullOrEmpty(Localizer["wp_music_menu_select"]))
+                    player.Print(Localizer["wp_music_menu_select", selectedName ?? "Unknown"]);
+
+                if (WeaponSync != null)
+                    _ = Task.Run(async () => await WeaponSync.SyncMusicToDatabase(playerInfo, (ushort)paint, teamsToCheck));
+            },
+            false, Config.Additional.MenuFreezePlayer);
+    }
+
+    private void OpenPinsMenu(CCSPlayerController player)
+    {
+        List<MenuItem> items = new();
+        var optionMap = new Dictionary<int, (int id, string image)>();
+        int i = 0;
+
+        // Add "None" option
+        items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(Localizer["None"])]));
+        optionMap[i++] = (0, "");
+
+        foreach (var pinObject in PinsList)
+        {
+            var paintName = pinObject["name"]?.ToString() ?? "";
+            if (paintName.Length == 0) continue;
+
+            if (!pinObject.ContainsKey("id")) continue;
+            if (!int.TryParse(pinObject["id"]?.ToString(), out var id)) continue;
+
+            var image = pinObject["image"]?.ToString() ?? "";
+            items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(paintName)]));
+            optionMap[i++] = (id, image);
+        }
+
+        if (items.Count == 0) return;
+
+        Menu.ShowScrollableMenu(
+            player,
+            Localizer["wp_pins_menu_title"],
+            items,
+            (buttons, menu, selected) =>
+            {
+                if (selected == null || buttons != MenuButtons.Select) return;
+                if (!optionMap.TryGetValue(menu.Option, out var pinData)) return;
+                if (!Utility.IsPlayerValid(player)) return;
+
+                var (paint, image) = pinData;
+                var playerPins = GPlayersPin.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
+                var teamsToCheck = player.TeamNum < 2
+                    ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
+                    : [player.Team];
+
+                if (Config.Additional.ShowSkinImage && !string.IsNullOrEmpty(image))
+                {
+                    _playerWeaponImage[player.Slot] = image;
+                    AddTimer(2.0f, () => _playerWeaponImage.Remove(player.Slot), TimerFlags.STOP_ON_MAPCHANGE);
+                }
+
+                PlayerInfo playerInfo = new()
+                {
+                    UserId = player.UserId,
+                    Slot = player.Slot,
+                    Index = (int)player.Index,
+                    SteamId = player.SteamID.ToString(),
+                    Name = player.PlayerName,
+                    IpAddress = player.IpAddress?.Split(":")[0]
+                };
+
+                foreach (var team in teamsToCheck)
+                    playerPins[team] = (ushort)paint;
+
+                GivePlayerPin(player);
+
+                var selectedName = paint == 0 ? Localizer["None"] : optionMap.FirstOrDefault(x => x.Value.id == paint).Value.ToString();
+                if (!string.IsNullOrEmpty(Localizer["wp_pins_menu_select"]))
+                    player.Print(Localizer["wp_pins_menu_select", selectedName ?? "Unknown"]);
+
+                if (WeaponSync != null)
+                    _ = Task.Run(async () => await WeaponSync.SyncPinToDatabase(playerInfo, (ushort)paint, teamsToCheck));
+            },
+            false, Config.Additional.MenuFreezePlayer);
+    }
+
+    #endregion
 
     private void OnCommandStattrak(CCSPlayerController? player, CommandInfo commandInfo)
     {
@@ -252,778 +868,4 @@ public partial class WeaponPaints
             player.Print(Localizer["wp_stattrak_action"]);
         }
     }
-
-    /* MENU_DISABLED: MenuManagerCS2 dependency temporarily disabled
-	private void SetupKnifeMenu()
-	{
-		if (!Config.Additional.KnifeEnabled || !_gBCommandsAllowed) return;
-
-		var knivesOnly = WeaponList
-			.Where(pair => pair.Key.StartsWith("weapon_knife") || pair.Key.StartsWith("weapon_bayonet"))
-			.ToDictionary(pair => pair.Key, pair => pair.Value);
-
-		var giveItemMenu = Utility.CreateMenu(Localizer["wp_knife_menu_title"]);
-			
-		var handleGive = (CCSPlayerController player, ChatMenuOption option) =>
-		{
-			if (!Utility.IsPlayerValid(player)) return;
-
-			var playerKnives = GPlayersKnife.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, string>());
-			var teamsToCheck = player.TeamNum < 2 
-				? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist } 
-				: [player.Team];
-			
-			var knifeName = option.Text;
-			var knifeKey = knivesOnly.FirstOrDefault(x => x.Value == knifeName).Key;
-			if (string.IsNullOrEmpty(knifeKey)) return;
-			if (!string.IsNullOrEmpty(Localizer["wp_knife_menu_select"]))
-			{
-				player.Print(Localizer["wp_knife_menu_select", knifeName]);
-			}
-
-			if (!string.IsNullOrEmpty(Localizer["wp_knife_menu_kill"]) && Config.Additional.CommandKillEnabled)
-			{
-				player.Print(Localizer["wp_knife_menu_kill"]);
-			}
-
-			PlayerInfo playerInfo = new PlayerInfo
-			{
-				UserId = player.UserId,
-				Slot = player.Slot,
-				Index = (int)player.Index,
-				SteamId = player.SteamID.ToString(),
-				Name = player.PlayerName,
-				IpAddress = player.IpAddress?.Split(":")[0]
-			};
-			
-			foreach (var team in teamsToCheck)
-			{
-				// Attempt to get the existing knives
-				playerKnives[team] = knifeKey;
-			}
-			
-			if (_gBCommandsAllowed && (LifeState_t)player.LifeState == LifeState_t.LIFE_ALIVE)
-				RefreshWeapons(player);
-
-			if (WeaponSync != null)
-				_ = Task.Run(async () => await WeaponSync.SyncKnifeToDatabase(playerInfo, knifeKey, teamsToCheck));
-		};
-		foreach (var knifePair in knivesOnly)
-		{
-			giveItemMenu?.AddMenuOption(knifePair.Value, handleGive);
-		}
-		_config.Additional.CommandKnife.ForEach(c =>
-		{
-			AddCommand($"css_{c}", "Knife Menu", (player, _) =>
-			{
-				if (giveItemMenu == null) return;
-				if (!Utility.IsPlayerValid(player) || !_gBCommandsAllowed) return;
-
-				if (player == null || player.UserId == null) return;
-
-				if (!CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime) ||
-				    DateTime.UtcNow >= (CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime) ? cooldownEndTime : DateTime.UtcNow))
-				{
-					CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
-					giveItemMenu.PostSelectAction = PostSelectAction.Close;
-					
-					giveItemMenu.Open(player);
-
-					return;
-				}
-				if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
-				{
-					player.Print(Localizer["wp_command_cooldown"]);
-				}
-			});
-		});
-	}
-	*/
-
-    /* MENU_DISABLED: MenuManagerCS2 dependency temporarily disabled
-    private void SetupSkinsMenu()
-    {
-        // var classNamesByWeapon = WeaponList.ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
-        var classNamesByWeapon = WeaponList
-            .Except([new KeyValuePair<string, string>("weapon_knife", "Default Knife")])
-            .ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
-
-        var weaponSelectionMenu = Utility.CreateMenu(Localizer["wp_skin_menu_weapon_title"]);
-
-        // Function to handle skin selection for a specific weapon
-        var handleWeaponSelection = (CCSPlayerController? player, ChatMenuOption option) =>
-        {
-            if (!Utility.IsPlayerValid(player)) return;
-
-            var selectedWeapon = option.Text;
-
-            if (!classNamesByWeapon.TryGetValue(selectedWeapon, out var selectedWeaponClassname)) return;
-            var skinsForSelectedWeapon = SkinsList.Where(skin =>
-                skin.TryGetValue("weapon_name", out var weaponName) &&
-                weaponName?.ToString() == selectedWeaponClassname
-            )?.ToList();
-
-            var skinSubMenu = Utility.CreateMenu(Localizer["wp_skin_menu_skin_title", selectedWeapon]);
-
-            // Function to handle skin selection for the chosen weapon
-            var handleSkinSelection = (CCSPlayerController p, ChatMenuOption opt) =>
-            {
-                if (!Utility.IsPlayerValid(p)) return;
-
-                var firstSkin = SkinsList.FirstOrDefault(skin =>
-                {
-                    if (skin.TryGetValue("weapon_name", out var weaponName))
-                    {
-                        return weaponName?.ToString() == selectedWeaponClassname;
-                    }
-                    return false;
-                });
-
-                var selectedSkin = opt.Text;
-                var selectedPaintId = selectedSkin[(selectedSkin.LastIndexOf('(') + 1)..].Trim(')');
-
-                if (firstSkin == null ||
-                    !firstSkin.TryGetValue("weapon_defindex", out var weaponDefIndexObj) ||
-                    !int.TryParse(weaponDefIndexObj.ToString(), out var weaponDefIndex) ||
-                    !int.TryParse(selectedPaintId, out var paintId)) return;
-                {
-                    if (Config.Additional.ShowSkinImage)
-                    {
-                        var foundSkin = SkinsList.FirstOrDefault(skin =>
-                            ((int?)skin["weapon_defindex"] ?? 0) == weaponDefIndex &&
-                            ((int?)skin["paint"] ?? 0) == paintId &&
-                            skin["image"] != null
-                        );
-                        var image = foundSkin?["image"]?.ToString() ?? "";
-                        _playerWeaponImage[p.Slot] = image;
-                        AddTimer(2.0f, () => _playerWeaponImage.Remove(p.Slot), TimerFlags.STOP_ON_MAPCHANGE);
-                    }
-
-                    p.Print(Localizer["wp_skin_menu_select", selectedSkin]);
-                    var playerSkins = GPlayerWeaponsInfo.GetOrAdd(p.Slot, new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>());
-
-                    var teamsToCheck = p.TeamNum < 2
-                        ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
-                        : [p.Team];
-
-                    foreach (var team in teamsToCheck)
-                    {
-                        // Ensure there's an entry for the team in playerSkins
-                        var teamWeapons = playerSkins.GetOrAdd(team, _ => new ConcurrentDictionary<int, WeaponInfo>());
-
-                        // Attempt to get or add the existing WeaponInfo
-                        var value = teamWeapons.GetOrAdd(weaponDefIndex, _ => new WeaponInfo());
-
-                        // Update the properties of WeaponInfo
-                        value.Paint = paintId;
-                        value.Wear = 0.01f;
-                        value.Seed = 0;
-                    }
-
-                    var playerInfo = new PlayerInfo
-                    {
-                        UserId = p.UserId,
-                        Slot = p.Slot,
-                        Index = (int)p.Index,
-                        SteamId = p.SteamID.ToString(),
-                        Name = p.PlayerName,
-                        IpAddress = p.IpAddress?.Split(":")[0]
-                    };
-
-                    if (!_gBCommandsAllowed || (LifeState_t)p.LifeState != LifeState_t.LIFE_ALIVE ||
-                        WeaponSync == null) return;
-                    RefreshWeapons(player);
-
-                    try
-                    {
-                        _ = Task.Run(async () => await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo));
-                    }
-                    catch (Exception ex)
-                    {
-                        Utility.Log($"Error syncing weapon paints: {ex.Message}");
-                    }
-                }
-            };
-
-            // Add skin options to the submenu for the selected weapon
-            if (skinsForSelectedWeapon != null)
-            {
-                foreach (var skin in skinsForSelectedWeapon)
-                {
-                    if (!skin.TryGetValue("paint_name", out var paintNameObj) ||
-                        !skin.TryGetValue("paint", out var paintObj)) continue;
-                    var paintName = paintNameObj?.ToString();
-                    var paint = paintObj?.ToString();
-
-                    if (!string.IsNullOrEmpty(paintName) && !string.IsNullOrEmpty(paint))
-                    {
-                        skinSubMenu?.AddMenuOption($"{paintName} ({paint})", handleSkinSelection);
-                    }
-                }
-            }
-            if (player != null && Utility.IsPlayerValid(player))
-                skinSubMenu?.Open(player);
-        };
-
-        // Add weapon options to the weapon selection menu
-        foreach (var weaponName in WeaponList
-                     .Where(kvp => kvp.Key != "weapon_knife")
-                     .Select(kvp => kvp.Value))
-        {
-            weaponSelectionMenu?.AddMenuOption(weaponName, handleWeaponSelection);
-        }
-        // Command to open the weapon selection menu for players
-
-        _config.Additional.CommandSkinSelection.ForEach(c =>
-        {
-            AddCommand($"css_{c}", "Skins selection menu", (player, _) =>
-            {
-                if (!Utility.IsPlayerValid(player)) return;
-
-                if (player == null || player.UserId == null) return;
-
-                if (!CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime) ||
-                    DateTime.UtcNow >= (CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime) ? cooldownEndTime : DateTime.UtcNow))
-                {
-                    CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
-                    weaponSelectionMenu?.Open(player);
-                    return;
-                }
-                if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
-                {
-                    player.Print(Localizer["wp_command_cooldown"]);
-                }
-            });
-        });
-    }
-    */
-
-    /* MENU_DISABLED: MenuManagerCS2 dependency temporarily disabled
-    private void SetupGlovesMenu()
-    {
-        var glovesSelectionMenu = Utility.CreateMenu(Localizer["wp_glove_menu_title"]);
-        if (glovesSelectionMenu == null) return;
-        glovesSelectionMenu.PostSelectAction = PostSelectAction.Close;
-
-        var handleGloveSelection = (CCSPlayerController? player, ChatMenuOption option) =>
-        {
-            if (!Utility.IsPlayerValid(player) || player is null) return;
-
-            var selectedPaintName = option.Text;
-
-            var playerGloves = GPlayersGlove.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
-            var teamsToCheck = player.TeamNum < 2
-                ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
-                : [player.Team];
-
-            var selectedGlove = GlovesList.FirstOrDefault(g => g.ContainsKey("paint_name") && g["paint_name"]?.ToString() == selectedPaintName);
-            var image = selectedGlove?["image"]?.ToString() ?? "";
-            if (selectedGlove == null ||
-                !selectedGlove.ContainsKey("weapon_defindex") ||
-                !selectedGlove.ContainsKey("paint") ||
-                !int.TryParse(selectedGlove["weapon_defindex"]?.ToString(), out var weaponDefindex) ||
-                !int.TryParse(selectedGlove["paint"]?.ToString(), out var paint)) return;
-            if (Config.Additional.ShowSkinImage)
-            {
-                _playerWeaponImage[player.Slot] = image;
-                AddTimer(2.0f, () => _playerWeaponImage.Remove(player.Slot), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
-            }
-
-            PlayerInfo playerInfo = new PlayerInfo
-            {
-                UserId = player.UserId,
-                Slot = player.Slot,
-                Index = (int)player.Index,
-                SteamId = player.SteamID.ToString(),
-                Name = player.PlayerName,
-                IpAddress = player.IpAddress?.Split(":")[0]
-            };
-
-            if (paint != 0)
-            {
-                // Ensure that player weapons info exists for the player
-                if (!GPlayerWeaponsInfo.ContainsKey(player.Slot))
-                {
-                    GPlayerWeaponsInfo[player.Slot] = new ConcurrentDictionary<CsTeam, ConcurrentDictionary<int, WeaponInfo>>();
-                }
-
-                // Ensure teams are initialized
-                foreach (var team in teamsToCheck)
-                {
-                    if (!GPlayerWeaponsInfo[player.Slot].ContainsKey(team))
-                    {
-                        GPlayerWeaponsInfo[player.Slot][team] = new ConcurrentDictionary<int, WeaponInfo>();
-                    }
-
-                    // Update the glove for the player in the specified team
-                    playerGloves[team] = (ushort)weaponDefindex;
-
-                    // Check if the glove information already exists for the player
-                    if (!GPlayerWeaponsInfo[player.Slot][team].ContainsKey(weaponDefindex))
-                    {
-                        WeaponInfo weaponInfo = new()
-                        {
-                            Paint = paint
-                        };
-                        GPlayerWeaponsInfo[player.Slot][team][weaponDefindex] = weaponInfo;
-                    }
-                }
-            }
-            else
-            {
-                GPlayersGlove.TryRemove(player.Slot, out _);
-            }
-
-            if (WeaponSync == null) return;
-
-            _ = Task.Run(async () =>
-            {
-                // Sync glove to database for all teams
-                foreach (var team in teamsToCheck)
-                {
-                    await WeaponSync.SyncGloveToDatabase(playerInfo, (ushort)weaponDefindex, teamsToCheck);
-
-                    // Check if the weapon info exists for the glove
-                    if (!GPlayerWeaponsInfo[playerInfo.Slot][team].TryGetValue(weaponDefindex, out var value))
-                    {
-                        value = new WeaponInfo();
-                        GPlayerWeaponsInfo[playerInfo.Slot][team][weaponDefindex] = value;
-                    }
-
-                    // Update weapon info
-                    value.Paint = paint;
-                    value.Wear = 0.00f;
-                    value.Seed = 0;
-
-                    // Sync weapon paints to database
-                    await WeaponSync.SyncWeaponPaintsToDatabase(playerInfo);
-                }
-            });
-
-            AddTimer(0.1f, () => GivePlayerGloves(player));
-            AddTimer(0.25f, () => GivePlayerGloves(player));
-        };
-
-        // Add weapon options to the weapon selection menu
-        foreach (var paintName in GlovesList.Select(gloveObject => gloveObject["paint_name"]?.ToString() ?? "").Where(paintName => paintName.Length > 0))
-        {
-            glovesSelectionMenu.AddMenuOption(paintName, handleGloveSelection);
-        }
-
-        // Command to open the weapon selection menu for players
-        _config.Additional.CommandGlove.ForEach(c =>
-        {
-            AddCommand($"css_{c}", "Gloves selection menu", (player, info) =>
-            {
-                if (!Utility.IsPlayerValid(player) || !_gBCommandsAllowed) return;
-
-                if (player == null || player.UserId == null) return;
-
-                if (!CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime) ||
-                    DateTime.UtcNow >= (CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime) ? cooldownEndTime : DateTime.UtcNow))
-                {
-                    CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
-                    glovesSelectionMenu?.Open(player);
-                    return;
-                }
-                if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
-                {
-                    player.Print(Localizer["wp_command_cooldown"]);
-                }
-            });
-        });
-    }
-    */
-
-    /* MENU_DISABLED: MenuManagerCS2 dependency temporarily disabled
-    private void SetupAgentsMenu()
-    {
-        var handleAgentSelection = (CCSPlayerController? player, ChatMenuOption option) =>
-        {
-            if (!Utility.IsPlayerValid(player) || player is null) return;
-
-            var selectedPaintName = option.Text;
-            var selectedAgent = AgentsList.FirstOrDefault(g =>
-                g.ContainsKey("agent_name") &&
-                g["agent_name"] != null && g["agent_name"]!.ToString() == selectedPaintName &&
-                g["team"] != null && (int)(g["team"]!) == player.TeamNum);
-
-            if (selectedAgent == null) return;
-
-            if (
-                selectedAgent.ContainsKey("model")
-            )
-            {
-                PlayerInfo playerInfo = new PlayerInfo
-                {
-                    UserId = player.UserId,
-                    Slot = player.Slot,
-                    Index = (int)player.Index,
-                    SteamId = player.SteamID.ToString(),
-                    Name = player.PlayerName,
-                    IpAddress = player.IpAddress?.Split(":")[0]
-                };
-
-                if (Config.Additional.ShowSkinImage)
-                {
-                    var image = selectedAgent["image"]?.ToString() ?? "";
-                    _playerWeaponImage[player.Slot] = image;
-                    AddTimer(2.0f, () => _playerWeaponImage.Remove(player.Slot), CounterStrikeSharp.API.Modules.Timers.TimerFlags.STOP_ON_MAPCHANGE);
-                }
-
-                if (!string.IsNullOrEmpty(Localizer["wp_agent_menu_select"]))
-                {
-                    player.Print(Localizer["wp_agent_menu_select", selectedPaintName]);
-                }
-
-                if (player.TeamNum == 3)
-                {
-                    GPlayersAgent.AddOrUpdate(player.Slot,
-                        key => (selectedAgent["model"]!.ToString().Equals("null") ? null : selectedAgent["model"]!.ToString(), null),
-                        (key, oldValue) => (selectedAgent["model"]!.ToString().Equals("null") ? null : selectedAgent["model"]!.ToString(), oldValue.T));
-                }
-                else
-                {
-                    GPlayersAgent.AddOrUpdate(player.Slot,
-                        key => (null, selectedAgent["model"]!.ToString().Equals("null") ? null : selectedAgent["model"]!.ToString()),
-                        (key, oldValue) => (oldValue.CT, selectedAgent["model"]!.ToString().Equals("null") ? null : selectedAgent["model"]!.ToString())
-                    );
-                }
-
-                if (WeaponSync != null)
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        await WeaponSync.SyncAgentToDatabase(playerInfo);
-                    });
-                }
-            }
-            ;
-        };
-
-        // Command to open the weapon selection menu for players
-        _config.Additional.CommandAgent.ForEach(c =>
-        {
-            AddCommand($"css_{c}", "Agents selection menu", (player, info) =>
-            {
-                if (!Utility.IsPlayerValid(player) || !_gBCommandsAllowed) return;
-
-                if (player == null || player.UserId == null) return;
-
-                if (!CommandsCooldown.TryGetValue(player.Slot, out DateTime cooldownEndTime) ||
-                    DateTime.UtcNow >= (CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime) ? cooldownEndTime : DateTime.UtcNow))
-                {
-                    var agentsSelectionMenu = Utility.CreateMenu(Localizer["wp_agent_menu_title"]);
-                    if (agentsSelectionMenu == null) return;
-                    agentsSelectionMenu.PostSelectAction = PostSelectAction.Close;
-
-                    var filteredAgents = AgentsList.Where(agentObject =>
-                    {
-                        if (agentObject["team"]?.Value<int>() is { } teamNum)
-                        {
-                            return teamNum == player.TeamNum;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    });
-
-                    // Add weapon options to the weapon selection menu
-
-                    foreach (var agentObject in filteredAgents)
-                    {
-                        var paintName = agentObject["agent_name"]?.ToString() ?? "";
-
-                        if (paintName.Length > 0)
-                            agentsSelectionMenu.AddMenuOption(paintName, handleAgentSelection);
-                    }
-
-                    CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
-                    agentsSelectionMenu.Open(player);
-                    return;
-                }
-                if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
-                {
-                    player.Print(Localizer["wp_command_cooldown"]);
-                }
-            });
-        });
-    }
-    */
-
-    /* MENU_DISABLED: MenuManagerCS2 dependency temporarily disabled
-    private void SetupMusicMenu()
-    {
-        var musicSelectionMenu = Utility.CreateMenu(Localizer["wp_music_menu_title"]);
-        if (musicSelectionMenu == null) return;
-        musicSelectionMenu.PostSelectAction = PostSelectAction.Close;
-
-        var handleMusicSelection = (CCSPlayerController? player, ChatMenuOption option) =>
-        {
-            if (!Utility.IsPlayerValid(player) || player is null) return;
-
-            var selectedPaintName = option.Text;
-
-            var playerMusic = GPlayersMusic.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
-            var teamsToCheck = player.TeamNum < 2
-                ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
-                : [player.Team];  // Corrected array initializer
-
-            var selectedMusic = MusicList.FirstOrDefault(g => g.ContainsKey("name") && g["name"]?.ToString() == selectedPaintName);
-            if (selectedMusic != null)
-            {
-                if (!selectedMusic.ContainsKey("id") ||
-                    !selectedMusic.ContainsKey("name") ||
-                    !int.TryParse(selectedMusic["id"]?.ToString(), out var paint)) return;
-                var image = selectedMusic["image"]?.ToString() ?? "";
-                if (Config.Additional.ShowSkinImage)
-                {
-                    _playerWeaponImage[player.Slot] = image;
-                    AddTimer(2.0f, () => _playerWeaponImage.Remove(player.Slot), TimerFlags.STOP_ON_MAPCHANGE);
-                }
-
-                PlayerInfo playerInfo = new PlayerInfo
-                {
-                    UserId = player.UserId,
-                    Slot = player.Slot,
-                    Index = (int)player.Index,
-                    SteamId = player.SteamID.ToString(),
-                    Name = player.PlayerName,
-                    IpAddress = player.IpAddress?.Split(":")[0]
-                };
-
-                if (paint != 0)
-                {
-                    foreach (var team in teamsToCheck)
-                    {
-                        playerMusic[team] = (ushort)paint;
-                    }
-                }
-                else
-                {
-                    foreach (var team in teamsToCheck)
-                    {
-                        playerMusic[team] = 0;
-                    }
-                }
-
-                GivePlayerMusicKit(player);
-
-                if (!string.IsNullOrEmpty(Localizer["wp_music_menu_select"]))
-                {
-                    player.Print(Localizer["wp_music_menu_select", selectedPaintName]);
-                }
-
-                if (WeaponSync != null)
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        await WeaponSync.SyncMusicToDatabase(playerInfo, (ushort)paint, teamsToCheck);
-                    });
-                }
-            }
-            else
-            {
-                PlayerInfo playerInfo = new PlayerInfo
-                {
-                    UserId = player.UserId,
-                    Slot = player.Slot,
-                    Index = (int)player.Index,
-                    SteamId = player.SteamID.ToString(),
-                    Name = player.PlayerName,
-                    IpAddress = player.IpAddress?.Split(":")[0]
-                };
-
-                foreach (var team in teamsToCheck)
-                {
-                    playerMusic[team] = 0;
-                }
-
-                GivePlayerMusicKit(player);
-
-                if (!string.IsNullOrEmpty(Localizer["wp_music_menu_select"]))
-                {
-                    player.Print(Localizer["wp_music_menu_select", Localizer["None"]]);
-                }
-
-                if (WeaponSync != null)
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        await WeaponSync.SyncMusicToDatabase(playerInfo, 0, teamsToCheck);
-                    });
-                }
-            }
-        };
-
-        musicSelectionMenu.AddMenuOption(Localizer["None"], handleMusicSelection);
-        // Add weapon options to the weapon selection menu
-        foreach (var paintName in MusicList.Select(musicObject => musicObject["name"]?.ToString() ?? "").Where(paintName => paintName.Length > 0))
-        {
-            musicSelectionMenu.AddMenuOption(paintName, handleMusicSelection);
-        }
-
-        // Command to open the weapon selection menu for players
-        _config.Additional.CommandMusic.ForEach(c =>
-        {
-            AddCommand($"css_{c}", "Music selection menu", (player, info) =>
-            {
-                if (!Utility.IsPlayerValid(player) || !_gBCommandsAllowed) return;
-
-                if (player == null || player.UserId == null) return;
-
-                if (!CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime) ||
-                    DateTime.UtcNow >= (CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime) ? cooldownEndTime : DateTime.UtcNow))
-                {
-                    CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
-                    musicSelectionMenu.Open(player);
-                    return;
-                }
-                if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
-                {
-                    player.Print(Localizer["wp_command_cooldown"]);
-                }
-            });
-        });
-    }
-    */
-
-    /* MENU_DISABLED: MenuManagerCS2 dependency temporarily disabled
-    private void SetupPinsMenu()
-    {
-        var pinsSelectionMenu = Utility.CreateMenu(Localizer["wp_pins_menu_title"]);
-        if (pinsSelectionMenu == null) return;
-        pinsSelectionMenu.PostSelectAction = PostSelectAction.Close;
-
-        var handlePinsSelection = (CCSPlayerController? player, ChatMenuOption option) =>
-        {
-            if (!Utility.IsPlayerValid(player) || player is null) return;
-
-            var selectedPaintName = option.Text;
-
-            var playerPins = GPlayersPin.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
-            var teamsToCheck = player.TeamNum < 2
-                ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
-                : [player.Team];
-
-            var selectedPin = PinsList.FirstOrDefault(g => g.ContainsKey("name") && g["name"]?.ToString() == selectedPaintName);
-            if (selectedPin != null)
-            {
-                if (!selectedPin.ContainsKey("id") ||
-                    !selectedPin.ContainsKey("name") ||
-                    !int.TryParse(selectedPin["id"]?.ToString(), out var paint)) return;
-                var image = selectedPin["image"]?.ToString() ?? "";
-                if (Config.Additional.ShowSkinImage)
-                {
-                    _playerWeaponImage[player.Slot] = image;
-                    AddTimer(2.0f, () => _playerWeaponImage.Remove(player.Slot), TimerFlags.STOP_ON_MAPCHANGE);
-                }
-
-                PlayerInfo playerInfo = new PlayerInfo
-                {
-                    UserId = player.UserId,
-                    Slot = player.Slot,
-                    Index = (int)player.Index,
-                    SteamId = player.SteamID.ToString(),
-                    Name = player.PlayerName,
-                    IpAddress = player.IpAddress?.Split(":")[0]
-                };
-
-                if (paint != 0)
-                {
-                    foreach (var team in teamsToCheck)
-                    {
-                        playerPins[team] = (ushort)paint; // Set pin for each team
-                    }
-                }
-                else
-                {
-                    foreach (var team in teamsToCheck)
-                    {
-                        playerPins[team] = 0; // Set pin for each team
-                    }
-                }
-
-                if (!string.IsNullOrEmpty(Localizer["wp_pins_menu_select"]))
-                {
-                    player.Print(Localizer["wp_pins_menu_select", selectedPaintName]);
-                }
-
-                GivePlayerPin(player);
-
-                if (WeaponSync != null)
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        await WeaponSync.SyncPinToDatabase(playerInfo, (ushort)paint, teamsToCheck);
-                    });
-                }
-            }
-            else
-            {
-                PlayerInfo playerInfo = new PlayerInfo
-                {
-                    UserId = player.UserId,
-                    Slot = player.Slot,
-                    Index = (int)player.Index,
-                    SteamId = player.SteamID.ToString(),
-                    Name = player.PlayerName,
-                    IpAddress = player.IpAddress?.Split(":")[0]
-                };
-
-                foreach (var team in teamsToCheck)
-                {
-                    playerPins[team] = 0; // Set music for each team
-                }
-
-                if (!string.IsNullOrEmpty(Localizer["wp_pins_menu_select"]))
-                {
-                    player.Print(Localizer["wp_pins_menu_select", Localizer["None"]]);
-                }
-
-                GivePlayerPin(player);
-
-                if (WeaponSync != null)
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        await WeaponSync.SyncPinToDatabase(playerInfo, 0, teamsToCheck);
-                    });
-                }
-            }
-        };
-
-        pinsSelectionMenu.AddMenuOption(Localizer["None"], handlePinsSelection);
-        // Add weapon options to the weapon selection menu
-        foreach (var paintName in PinsList.Select(musicObject => musicObject["name"]?.ToString() ?? "").Where(paintName => paintName.Length > 0))
-        {
-            pinsSelectionMenu.AddMenuOption(paintName, handlePinsSelection);
-        }
-
-        // Command to open the weapon selection menu for players
-        _config.Additional.CommandPin.ForEach(c =>
-        {
-            AddCommand($"css_{c}", "Pin selection menu", (player, info) =>
-            {
-                if (!Utility.IsPlayerValid(player) || !_gBCommandsAllowed) return;
-
-                if (player == null || player.UserId == null) return;
-
-                if (!CommandsCooldown.TryGetValue(player.Slot, out var cooldownEndTime) ||
-                    DateTime.UtcNow >= (CommandsCooldown.TryGetValue(player.Slot, out cooldownEndTime) ? cooldownEndTime : DateTime.UtcNow))
-                {
-                    CommandsCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
-                    pinsSelectionMenu.Open(player);
-                    return;
-                }
-
-                if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
-                {
-                    player.Print(Localizer["wp_command_cooldown"]);
-                }
-            });
-        });
-    }
-        */
 }
