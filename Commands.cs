@@ -37,7 +37,8 @@ public partial class WeaponPaints
 
                 if (WeaponSync != null)
                 {
-                    _ = Task.Run(async () => await WeaponSync.GetPlayerData(playerInfo));
+                    // Call sync method - it handles ThreadPool internally
+                    WeaponSync.GetPlayerData(playerInfo);
 
                     GivePlayerGloves(player);
                     RefreshWeapons(player);

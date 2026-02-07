@@ -11,29 +11,31 @@ public static class Patch
     {
         // Returns address if found, otherwise a C++ nullptr which is a IntPtr.Zero in C#
         var address = NativeAPI.FindSignature(modulePath, signature);
-        
+
         return address;
     }
 
     public static void PerformPatch(string signature, string patch)
     {
         IntPtr address = GetAddress(Addresses.ServerPath, signature);
-        if(address == IntPtr.Zero)
+        if (address == IntPtr.Zero)
         {
             return;
         }
-        
+
         WriteBytesToAddress(address, HexToByte(patch));
     }
 
     private static void WriteBytesToAddress(IntPtr address, List<byte> bytes)
     {
         int patchSize = bytes.Count;
-        if(patchSize == 0) throw new ArgumentException("Patch bytes list cannot be empty.");
-        
+        if (patchSize == 0) throw new ArgumentException("Patch bytes list cannot be empty.");
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            MemoryLinux.PatchBytesAtAddress(address, bytes.ToArray(), patchSize);
+            // DISABLED: MemoryLinux causes TypeLoadException due to P/Invoke stub generation
+            // MemoryLinux.PatchBytesAtAddress(address, bytes.ToArray(), patchSize);
+            return; // No-op on Linux for now
         }
         else
         {

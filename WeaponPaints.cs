@@ -59,10 +59,8 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                     IpAddress = player?.IpAddress?.Split(":")[0]
                 };
 
-                _ = Task.Run(async () =>
-                {
-                    if (WeaponSync != null) await WeaponSync.GetPlayerData(playerInfo);
-                });
+                // Call sync method - it handles ThreadPool internally
+                WeaponSync?.GetPlayerData(playerInfo);
             }
         }
 

@@ -32,7 +32,8 @@ namespace WeaponPaints
 
             try
             {
-                _ = Task.Run(async () => await WeaponSync.GetPlayerData(playerInfo));
+                // Call sync method - it handles ThreadPool internally to avoid Harmony patching
+                WeaponSync.GetPlayerData(playerInfo);
                 /*
 				if (Config.Additional.SkinEnabled)
 				{
@@ -82,16 +83,21 @@ namespace WeaponPaints
                 IpAddress = player.IpAddress?.Split(":")[0]
             };
 
-            Task.Run(async () =>
+            // Call sync method - it handles ThreadPool internally to avoid Harmony async patching issues
+            try
             {
                 if (WeaponSync != null)
-                    await WeaponSync.SyncStatTrakToDatabase(playerInfo);
+                    WeaponSync.SyncStatTrakToDatabase(playerInfo);
 
                 if (Config.Additional.SkinEnabled)
                 {
                     GPlayerWeaponsInfo.TryRemove(player.Slot, out _);
                 }
-            });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[OnPlayerDisconnect] Error: {ex.GetType().Name}: {ex.Message}");
+            }
 
             if (Config.Additional.KnifeEnabled)
             {
@@ -202,21 +208,46 @@ namespace WeaponPaints
 
         private HookResult OnGiveNamedItemPost(DynamicHook hook)
         {
+            Logger.LogDebug($"[OnGiveNamedItemPost] ENTER");
+
             try
             {
                 var itemServices = hook.GetParam<CCSPlayer_ItemServices>(0);
                 var weapon = hook.GetReturn<CBasePlayerWeapon>();
-                if (!weapon.DesignerName.Contains("weapon"))
+
+                Logger.LogDebug($"[OnGiveNamedItemPost] weapon.DesignerName={weapon?.DesignerName ?? "null"}, weapon.IsValid={weapon?.IsValid}");
+
+                if (weapon == null || !weapon.IsValid)
+                {
+                    Logger.LogDebug("[OnGiveNamedItemPost] EXIT: weapon null or invalid");
                     return HookResult.Continue;
+                }
+
+                if (!weapon.DesignerName.Contains("weapon"))
+                {
+                    Logger.LogDebug("[OnGiveNamedItemPost] EXIT: not a weapon");
+                    return HookResult.Continue;
+                }
 
                 var player = GetPlayerFromItemServices(itemServices);
+                Logger.LogDebug($"[OnGiveNamedItemPost] player={player?.PlayerName ?? "null"}, SteamID={player?.SteamID}");
+
                 if (player != null)
                 {
+                    Logger.LogDebug($"[OnGiveNamedItemPost] Calling GivePlayerWeaponSkin for {player.PlayerName}, weapon={weapon.DesignerName}");
                     GivePlayerWeaponSkin(player, weapon);
                 }
+                else
+                {
+                    Logger.LogDebug("[OnGiveNamedItemPost] player is null, skipping");
+                }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[OnGiveNamedItemPost] EXCEPTION: {ex.Message}\n{ex.StackTrace}");
+            }
 
+            Logger.LogDebug("[OnGiveNamedItemPost] EXIT");
             return HookResult.Continue;
         }
 
@@ -226,40 +257,107 @@ namespace WeaponPaints
 
             if (designerName.Contains("weapon"))
             {
+                var entityIndex = entity.Index;
+                var entityHandle = entity.Handle;
+                Logger.LogDebug($"[OnEntityCreated] Weapon detected: {designerName}, Index={entityIndex}, Handle={entityHandle}");
+
                 Server.NextWorldUpdate(() =>
                 {
-                    var weapon = new CBasePlayerWeapon(entity.Handle);
-                    if (!weapon.IsValid) return;
+                    Logger.LogDebug($"[OnEntityCreated.NextWorldUpdate] ENTER: designerName={designerName}, entityIndex={entityIndex}");
+
+                    CBasePlayerWeapon? weapon = null;
+                    try
+                    {
+                        weapon = new CBasePlayerWeapon(entityHandle);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"[OnEntityCreated.NextWorldUpdate] Failed to create CBasePlayerWeapon: {ex.Message}");
+                        return;
+                    }
+
+                    if (weapon == null)
+                    {
+                        Logger.LogDebug("[OnEntityCreated.NextWorldUpdate] EXIT: weapon is null");
+                        return;
+                    }
+
+                    if (!weapon.IsValid)
+                    {
+                        Logger.LogDebug($"[OnEntityCreated.NextWorldUpdate] EXIT: weapon.IsValid=false for {designerName}");
+                        return;
+                    }
+
+                    Logger.LogDebug($"[OnEntityCreated.NextWorldUpdate] weapon.IsValid=true, DesignerName={weapon.DesignerName}, OriginalOwnerXuidLow={weapon.OriginalOwnerXuidLow}");
 
                     try
                     {
                         SteamID? steamid = null;
 
                         if (weapon.OriginalOwnerXuidLow > 0)
+                        {
                             steamid = new SteamID(weapon.OriginalOwnerXuidLow);
+                            Logger.LogDebug($"[OnEntityCreated.NextWorldUpdate] SteamID created: {steamid?.SteamId64}, IsValid={steamid?.IsValid()}");
+                        }
 
-                        CCSPlayerController? player;
+                        CCSPlayerController? player = null;
 
                         if (steamid != null && steamid.IsValid())
                         {
                             player = Players.FirstOrDefault(p => p.IsValid && p.SteamID == steamid.SteamId64);
+                            Logger.LogDebug($"[OnEntityCreated.NextWorldUpdate] Player lookup by SteamID: found={player != null}");
 
                             if (player == null)
+                            {
                                 player = Utilities.GetPlayerFromSteamId(weapon.OriginalOwnerXuidLow);
+                                Logger.LogDebug($"[OnEntityCreated.NextWorldUpdate] Fallback GetPlayerFromSteamId: found={player != null}");
+                            }
                         }
                         else
                         {
-                            CCSWeaponBaseGun gun = weapon.As<CCSWeaponBaseGun>();
-                            player = Utilities.GetPlayerFromIndex((int)weapon.OwnerEntity.Index) ?? Utilities.GetPlayerFromIndex((int)gun.OwnerEntity.Value!.Index);
+                            Logger.LogDebug("[OnEntityCreated.NextWorldUpdate] No valid SteamID, trying OwnerEntity lookup");
+                            try
+                            {
+                                CCSWeaponBaseGun gun = weapon.As<CCSWeaponBaseGun>();
+                                player = Utilities.GetPlayerFromIndex((int)weapon.OwnerEntity.Index);
+                                if (player == null && gun.OwnerEntity.Value != null)
+                                {
+                                    player = Utilities.GetPlayerFromIndex((int)gun.OwnerEntity.Value.Index);
+                                }
+                                Logger.LogDebug($"[OnEntityCreated.NextWorldUpdate] OwnerEntity lookup: found={player != null}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.LogDebug($"[OnEntityCreated.NextWorldUpdate] OwnerEntity lookup failed: {ex.Message}");
+                            }
                         }
 
-                        if (string.IsNullOrEmpty(player?.PlayerName)) return;
-                        if (!Utility.IsPlayerValid(player)) return;
+                        if (string.IsNullOrEmpty(player?.PlayerName))
+                        {
+                            Logger.LogDebug("[OnEntityCreated.NextWorldUpdate] EXIT: player.PlayerName is null or empty");
+                            return;
+                        }
 
+                        if (!Utility.IsPlayerValid(player))
+                        {
+                            Logger.LogDebug($"[OnEntityCreated.NextWorldUpdate] EXIT: IsPlayerValid=false for {player.PlayerName}");
+                            return;
+                        }
+
+                        // ========== GUARD: Re-validate weapon before calling GivePlayerWeaponSkin ==========
+                        if (!weapon.IsValid)
+                        {
+                            Logger.LogDebug("[OnEntityCreated.NextWorldUpdate] EXIT: weapon became invalid before GivePlayerWeaponSkin");
+                            return;
+                        }
+
+                        Logger.LogDebug($"[OnEntityCreated.NextWorldUpdate] Calling GivePlayerWeaponSkin for {player.PlayerName}, weapon={weapon.DesignerName}");
                         GivePlayerWeaponSkin(player, weapon);
+                        Logger.LogDebug("[OnEntityCreated.NextWorldUpdate] GivePlayerWeaponSkin completed");
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        Logger.LogError($"[OnEntityCreated.NextWorldUpdate] EXCEPTION: {ex.Message}\n{ex.StackTrace}");
                     }
                 });
             }

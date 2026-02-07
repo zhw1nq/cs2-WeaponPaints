@@ -1,3 +1,10 @@
+// DISABLED: This file is excluded from compilation because PerformPatch is not used
+// and the P/Invoke declarations cause TypeLoadException on Linux .NET 8
+// Error: 'NativeMethodHolder' from assembly 'WeaponPaints_MemoryLinux+LinuxNativeMethods_dlinfo'
+// If you need to re-enable patching, remove the #if false / #endif directives
+
+#if false
+
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -17,13 +24,13 @@ public static class MemoryLinux
                 case '-':
                     break;
                 case 'r':
-                    prot |= NativeMethods.PROT_READ;
+                    prot |= LinuxNativeMethods.PROT_READ;
                     break;
                 case 'w':
-                    prot |= NativeMethods.PROT_WRITE;
+                    prot |= LinuxNativeMethods.PROT_WRITE;
                     break;
                 case 'x':
-                    prot |= NativeMethods.PROT_EXEC;
+                    prot |= LinuxNativeMethods.PROT_EXEC;
                     break;
                 case 's':
                     break;
@@ -78,17 +85,17 @@ public static class MemoryLinux
         
         var oldProt = GetProt(pPatchAddress, (uint)iPatchSize);
 
-        var pageSize = (ulong)NativeMethods.sysconf(NativeMethods._SC_PAGESIZE);
+        var pageSize = (ulong)LinuxNativeMethods.sysconf(LinuxNativeMethods._SC_PAGESIZE);
         var alignAddr = (IntPtr)((long)pPatchAddress & ~(long)(pageSize - 1));
 
         var end = (IntPtr)((long)pPatchAddress + iPatchSize);
         var alignSize = (ulong)((long)end - (long)alignAddr);
 
-        var result = NativeMethods.mprotect(alignAddr, alignSize, NativeMethods.PROT_READ | NativeMethods.PROT_WRITE);
+        var result = LinuxNativeMethods.mprotect(alignAddr, alignSize, LinuxNativeMethods.PROT_READ | LinuxNativeMethods.PROT_WRITE);
 
         Marshal.Copy(pPatch, 0, pPatchAddress, iPatchSize);
 
-        result = NativeMethods.mprotect(alignAddr, alignSize, oldProt);
+        result = LinuxNativeMethods.mprotect(alignAddr, alignSize, oldProt);
     }
     
     private static byte[]? ReadProcessMemory(int pid, long address, int size)
@@ -97,19 +104,19 @@ public static class MemoryLinux
         
         byte[] buffer = new byte[size];
 
-        NativeMethods.Iovec local = new NativeMethods.Iovec
+        LinuxNativeMethods.Iovec local = new LinuxNativeMethods.Iovec
         {
             iov_base = Marshal.UnsafeAddrOfPinnedArrayElement(buffer, 0),
             iov_len = new IntPtr(size)
         };
 
-        NativeMethods.Iovec remote = new NativeMethods.Iovec
+        LinuxNativeMethods.Iovec remote = new LinuxNativeMethods.Iovec
         {
             iov_base = new IntPtr(address),
             iov_len = new IntPtr(size)
         };
 
-        long bytesRead = NativeMethods.process_vm_readv(pid, new NativeMethods.Iovec[] { local }, 1, new NativeMethods.Iovec[] { remote }, 1, 0);
+        long bytesRead = LinuxNativeMethods.process_vm_readv(pid, new LinuxNativeMethods.Iovec[] { local }, 1, new LinuxNativeMethods.Iovec[] { remote }, 1, 0);
         if (bytesRead == -1)
         {
             throw new Exception($"process_vm_readv failed with error {Marshal.GetLastPInvokeError()}");
@@ -125,9 +132,11 @@ public static class MemoryLinux
         return ReadProcessMemory(Process.GetCurrentProcess().Id, (long)address, size);
     }
 
-    #pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
-    #pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
-    static class NativeMethods
+#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
+    
+    // Separate class to prevent TypeLoadException on Windows when NativeMethods P/Invoke definitions are loaded
+    internal static class LinuxNativeMethods
     {
         public const int O_RDONLY = 0;
         public const int PROT_READ = 0x1;
@@ -216,6 +225,8 @@ public static class MemoryLinux
             public ulong st_size;
         }
     }
-    #pragma warning restore CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
-    #pragma warning restore CS0649 // Field is never assigned to, and will always have its default value
+#pragma warning restore CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
+#pragma warning restore CS0649 // Field is never assigned to, and will always have its default value
 }
+
+#endif
