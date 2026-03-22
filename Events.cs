@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Entities;
@@ -122,6 +122,7 @@ namespace WeaponPaints
 
             _temporaryPlayerWeaponWear.TryRemove(player.Slot, out _);
             CommandsCooldown.Remove(player.Slot);
+            MenuSelectionCooldown.Remove(player.Slot);
             Players.Remove(player);
 
             return HookResult.Continue;

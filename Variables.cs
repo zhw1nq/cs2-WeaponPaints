@@ -91,6 +91,7 @@ public partial class WeaponPaints
     private readonly Dictionary<int, DateTime> _playerDisabledMessageEndTime = new();
 
     private static readonly Dictionary<int, DateTime> CommandsCooldown = new();
+    private static readonly Dictionary<int, DateTime> MenuSelectionCooldown = new();
     internal static Database? Database;
 
     private static readonly MemoryFunctionVoid<nint, string, float> CAttributeListSetOrAddAttributeValueByName = new(GameData.GetSignature("CAttributeList_SetOrAddAttributeValueByName"));

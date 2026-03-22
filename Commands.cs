@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
@@ -338,6 +338,15 @@ public partial class WeaponPaints
                 if (!optionMap.TryGetValue(menu.Option, out var knifeKey)) return;
                 if (!Utility.IsPlayerValid(player)) return;
 
+                // Check menu selection cooldown to prevent spam/dup
+                if (MenuSelectionCooldown.TryGetValue(player.Slot, out var selCooldown) && DateTime.UtcNow < selCooldown)
+                {
+                    if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
+                        player.Print(Localizer["wp_command_cooldown"]);
+                    return;
+                }
+                MenuSelectionCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
+
                 var playerKnives = GPlayersKnife.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, string>());
                 var teamsToCheck = player.TeamNum < 2
                     ? new[] { CsTeam.Terrorist, CsTeam.CounterTerrorist }
@@ -448,6 +457,15 @@ public partial class WeaponPaints
                 if (!optionMap.TryGetValue(menu.Option, out var skinData)) return;
                 if (!Utility.IsPlayerValid(player)) return;
 
+                // Check menu selection cooldown to prevent spam/dup
+                if (MenuSelectionCooldown.TryGetValue(player.Slot, out var selCooldown) && DateTime.UtcNow < selCooldown)
+                {
+                    if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
+                        player.Print(Localizer["wp_command_cooldown"]);
+                    return;
+                }
+                MenuSelectionCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
+
                 var (paintId, weaponDefIndex) = skinData;
 
                 if (Config.Additional.ShowSkinImage)
@@ -532,6 +550,15 @@ public partial class WeaponPaints
                 if (selected == null || buttons != MenuButtons.Select) return;
                 if (!optionMap.TryGetValue(menu.Option, out var gloveData)) return;
                 if (!Utility.IsPlayerValid(player)) return;
+
+                // Check menu selection cooldown to prevent spam/dup
+                if (MenuSelectionCooldown.TryGetValue(player.Slot, out var selCooldown) && DateTime.UtcNow < selCooldown)
+                {
+                    if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
+                        player.Print(Localizer["wp_command_cooldown"]);
+                    return;
+                }
+                MenuSelectionCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
                 var (weaponDefindex, paint, image) = gloveData;
                 var playerGloves = GPlayersGlove.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
@@ -647,6 +674,15 @@ public partial class WeaponPaints
                 if (!optionMap.TryGetValue(menu.Option, out var selectedAgent)) return;
                 if (!Utility.IsPlayerValid(player)) return;
 
+                // Check menu selection cooldown to prevent spam/dup
+                if (MenuSelectionCooldown.TryGetValue(player.Slot, out var selCooldown) && DateTime.UtcNow < selCooldown)
+                {
+                    if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
+                        player.Print(Localizer["wp_command_cooldown"]);
+                    return;
+                }
+                MenuSelectionCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
+
                 PlayerInfo playerInfo = new()
                 {
                     UserId = player.UserId,
@@ -737,6 +773,15 @@ public partial class WeaponPaints
                 if (!optionMap.TryGetValue(menu.Option, out var musicData)) return;
                 if (!Utility.IsPlayerValid(player)) return;
 
+                // Check menu selection cooldown to prevent spam/dup
+                if (MenuSelectionCooldown.TryGetValue(player.Slot, out var selCooldown) && DateTime.UtcNow < selCooldown)
+                {
+                    if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
+                        player.Print(Localizer["wp_command_cooldown"]);
+                    return;
+                }
+                MenuSelectionCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
+
                 var (paint, image) = musicData;
                 var playerMusic = GPlayersMusic.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
                 var teamsToCheck = player.TeamNum < 2
@@ -808,6 +853,15 @@ public partial class WeaponPaints
                 if (selected == null || buttons != MenuButtons.Select) return;
                 if (!optionMap.TryGetValue(menu.Option, out var pinData)) return;
                 if (!Utility.IsPlayerValid(player)) return;
+
+                // Check menu selection cooldown to prevent spam/dup
+                if (MenuSelectionCooldown.TryGetValue(player.Slot, out var selCooldown) && DateTime.UtcNow < selCooldown)
+                {
+                    if (!string.IsNullOrEmpty(Localizer["wp_command_cooldown"]))
+                        player.Print(Localizer["wp_command_cooldown"]);
+                    return;
+                }
+                MenuSelectionCooldown[player.Slot] = DateTime.UtcNow.AddSeconds(Config.CmdRefreshCooldownSeconds);
 
                 var (paint, image) = pinData;
                 var playerPins = GPlayersPin.GetOrAdd(player.Slot, new ConcurrentDictionary<CsTeam, ushort>());
