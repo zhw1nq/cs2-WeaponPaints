@@ -19,10 +19,10 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
 
     public WeaponPaintsConfig Config { get; set; } = new();
     private static WeaponPaintsConfig _config { get; set; } = new();
-    public override string ModuleAuthor => "Nereziel & daffyy";
+    public override string ModuleAuthor => "Nereziel & daffyy & vhming";
     public override string ModuleDescription => "Skin, gloves, agents and knife selector, standalone and web-based";
     public override string ModuleName => "WeaponPaints";
-    public override string ModuleVersion => "3.2b";
+    public override string ModuleVersion => "3.3a";
 
     public override void Load(bool hotReload)
     {
@@ -49,7 +49,7 @@ public partial class WeaponPaints : BasePlugin, IPluginConfig<WeaponPaintsConfig
                          .OfType<CCSPlayerController>(Utilities.GetPlayers().TakeWhile(_ => WeaponSync != null))
                          .Where(player => player.IsValid &&
                              !string.IsNullOrEmpty(player.IpAddress) && player is
-                             { IsBot: false, Connected: PlayerConnectedState.PlayerConnected }))
+                             { IsBot: false, Connected: PlayerConnectedState.Connected }))
             {
                 var playerInfo = new PlayerInfo
                 {
