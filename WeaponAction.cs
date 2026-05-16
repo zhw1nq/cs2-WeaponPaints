@@ -1,4 +1,4 @@
-﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Memory;
@@ -351,14 +351,13 @@ namespace WeaponPaints
                         return;
                     }
 
-                    int stickerSlot = weaponInfo.Stickers.IndexOf(sticker);
+                    int stickerSlot = sticker.Slot;
                     Logger.LogDebug($"[SetStickers] Applying sticker slot={stickerSlot}, id={sticker.Id}");
 
                     CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle,
                         $"sticker slot {stickerSlot} id", ViewAsFloat(sticker.Id));
-                    if (sticker.OffsetX != 0 || sticker.OffsetY != 0)
-                        CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle,
-                            $"sticker slot {stickerSlot} schema", 0);
+                    CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle,
+                        $"sticker slot {stickerSlot} schema", ViewAsFloat(sticker.Schema));
                     CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle,
                         $"sticker slot {stickerSlot} offset x", sticker.OffsetX);
                     CAttributeListSetOrAddAttributeValueByName.Invoke(weapon.AttributeManager.Item.NetworkedDynamicAttributes.Handle,

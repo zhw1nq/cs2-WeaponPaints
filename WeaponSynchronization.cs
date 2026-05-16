@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using MySqlConnector;
 using System.Collections.Concurrent;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -286,6 +286,7 @@ internal class WeaponSynchronization
 
                     StickerInfo stickerInfo = new StickerInfo
                     {
+                        Slot = i,
                         Id = stickerId,
                         Schema = stickerSchema,
                         OffsetX = stickerOffsetX,
